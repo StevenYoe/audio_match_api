@@ -1,0 +1,13 @@
+INFO:     Started server process [16988]
+INFO:     Waiting for application startup.
+INFO:app.main:Starting up...
+INFO:app.main:Database pool created.
+INFO:app.main:Redis client created.
+INFO:app.main:Successfully connected to Redis.
+INFO:     Application startup complete.
+ERROR:    [Errno 10048] error while attempting to bind on address ('127.0.0.1', 8000): [winerror 10048] only one usage of each socket address (protocol/network address/port) is normally permitted
+INFO:     Waiting for application shutdown.
+INFO:app.main:Shutting down...
+INFO:app.main:Database pool closed.
+INFO:app.main:Redis client closed.
+INFO:     Application shutdown complete.

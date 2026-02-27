@@ -1,0 +1,11 @@
+fastapi
+pydantic[email]
+pydantic-settings
+uvicorn[standard]
+asyncpg
+redis
+httpx
+tenacity
+fastapi-limiter
+python-dotenv
+pytz
