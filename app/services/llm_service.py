@@ -6,9 +6,10 @@ from app.core.config import settings
 class LLMService:
     def __init__(self, client: httpx.AsyncClient):
         self.client = client
-        self.api_url = "https://api.poe.com/v1/chat/completions"
+        # Using Gemini's OpenAI-compatible endpoint
+        self.api_url = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"
         self.headers = {
-            "Authorization": f"Bearer {settings.POE_API_KEY}",
+            "Authorization": f"Bearer {settings.GEMINI_API_KEY}",
             "Content-Type": "application/json"
         }
 

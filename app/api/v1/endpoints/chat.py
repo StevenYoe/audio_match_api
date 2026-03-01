@@ -31,117 +31,95 @@ async def chat(
         session_id = request.session_id
         if not session_id or not _is_valid_uuid(session_id):
             session_id = str(uuid.uuid4())
-            await redis.set_session_data(session_id, {"history": []})
+            await redis.set_session_data(session_id, {"history": [], "last_context": ""})
         
-        session_data = await redis.get_session_data(session_id) or {"history": []}
+        session_data = await redis.get_session_data(session_id) or {"history": [], "last_context": ""}
         history = session_data.get("history", [])
+        last_context = session_data.get("last_context", "")
 
         # 2. Get Current Time (WIB)
         wib = pytz.timezone('Asia/Jakarta')
         now = datetime.now(wib)
         current_time_str = now.strftime("%H:%M")
         
-        # Determine time-based greeting context
-        hour = now.hour
-        if 5 <= hour < 11:
-            time_greeting = "Pagi"
-        elif 11 <= hour < 15:
-            time_greeting = "Siang"
-        elif 15 <= hour < 19:
-            time_greeting = "Sore"
-        else:
-            time_greeting = "Malam"
-
-        # 3. Database Search (Always search to check for audio intent)
-        # Extract the core intent from potentially conversational/long user messages
-        extracted_intent = await llm_service.extract_audio_intent(request.message)
-        logger.info(f"Original message: {request.message}")
-        logger.info(f"Extracted intent: {extracted_intent}")
-
-        embedding = await embedding_service.get_embedding(extracted_intent, input_type="query")
-        problems = await db.search_problem(embedding)
-        
-        logger.info(f"Problems found: {len(problems) if problems else 0}")
-        if problems:
-            logger.info(f"Top problem: {problems[0]['mcp_problem_title']} (Similarity: {problems[0]['similarity']})")
+        # 3. Intelligent Context Retrieval
+        # Check if user is referencing previous options
+        is_referencing = any(word in request.message.lower() for word in ["opsi", "nomor", "yang", "pilihan", "itu", "menarik", "lanjut"]) and len(request.message.split()) < 6
         
         recommendations_context = ""
         knowledge_context = ""
         has_audio_data = False
         recommendations = []
 
-        if problems:
-            # Try to find a problem that actually has recommendations/solutions
-            # (Previously we only checked problems[0], but it might have 0 solutions)
-            raw_recs = []
-            matched_problem_title = ""
+        if is_referencing and last_context:
+            logger.info("User is referencing previous context. Reusing last context.")
+            recommendations_context = last_context
+            has_audio_data = True
+        else:
+            # New search for new topics
+            extracted_intent = await llm_service.extract_audio_intent(request.message)
+            embedding = await embedding_service.get_embedding(extracted_intent, input_type="query")
+            problems = await db.search_problem(embedding)
             
-            for prob in problems:
-                found_recs = await db.get_recommendations(str(prob['mcp_id']))
-                if found_recs:
-                    raw_recs = found_recs
-                    matched_problem_title = prob['mcp_problem_title']
-                    logger.info(f"Found solutions for problem: {matched_problem_title}")
-                    break
-            
-            if raw_recs:
-                has_audio_data = True
-                recommendations_context = f"\nUSER PROBLEM: {matched_problem_title}\nAVAILABLE SOLUTIONS:\n"
+            if problems:
+                raw_recs = []
+                matched_problem_title = ""
+                for prob in problems:
+                    found_recs = await db.get_recommendations(str(prob['mcp_id']))
+                    if found_recs:
+                        raw_recs = found_recs
+                        matched_problem_title = prob['mcp_problem_title']
+                        break
                 
-                # Group by solution for the response model
-                sol_map = {}
-                for rec in raw_recs:
-                    recommendations_context += f"- {rec['solution_title']}: {rec['product_name']} ({rec['product_category']}) - Start from Rp {rec['product_price']}\n"
-                    
-                    sid = str(rec['solution_id'])
-                    if sid not in sol_map:
-                        sol_map[sid] = {
-                            "solution_id": sid,
-                            "solution_title": rec['solution_title'],
-                            "solution_description": rec['solution_description'],
-                            "products": []
-                        }
-                    
-                    sol_map[sid]["products"].append({
-                        "product_id": str(rec['product_id']),
-                        "product_name": rec['product_name'],
-                        "product_category": rec['product_category'],
-                        "product_price": float(rec['product_price']),
-                        "image": rec.get('product_image') or "⚡"
-                    })
-                
-                recommendations = list(sol_map.values())
-            else:
-                logger.warning("All matched problems had zero solutions/recommendations in DB.")
-        
-        # Optional knowledge search
-        k_chunks = await db.search_knowledge(embedding)
-        if k_chunks:
-            knowledge_context = "\nGENERAL KNOWLEDGE:\n" + "\n".join([f"- {k['mkc_content']}" for k in k_chunks])
+                if raw_recs:
+                    has_audio_data = True
+                    recommendations_context = f"\nUSER PROBLEM: {matched_problem_title}\nAVAILABLE SOLUTIONS:\n"
+                    sol_map = {}
+                    for i, rec in enumerate(raw_recs):
+                        recommendations_context += f"{i+1}. {rec['solution_title']}: {rec['product_name']} ({rec['product_category']}) - Start from Rp {rec['product_price']}\n"
+                        
+                        sid = str(rec['solution_id'])
+                        if sid not in sol_map:
+                            sol_map[sid] = {
+                                "solution_id": sid,
+                                "solution_title": rec['solution_title'],
+                                "solution_description": rec['solution_description'],
+                                "products": []
+                            }
+                        sol_map[sid]["products"].append({
+                            "product_id": str(rec['product_id']),
+                            "product_name": rec['product_name'],
+                            "product_category": rec['product_category'],
+                            "product_price": float(rec['product_price']),
+                            "image": rec.get('product_image') or "⚡"
+                        })
+                    recommendations = list(sol_map.values())
+                    last_context = recommendations_context
+
+            k_chunks = await db.search_knowledge(embedding) if not is_referencing else []
+            if k_chunks:
+                knowledge_context = "\nGENERAL KNOWLEDGE:\n" + "\n".join([f"- {k['mkc_content']}" for k in k_chunks])
 
         # 4. Build Flexible but Strict System Prompt
         system_prompt = f"""
 You are an expert AI Sales Assistant for AudioMatch. 
 Current Time: {current_time_str}.
 
+FORMATTING RULES:
+- DO NOT use any Markdown formatting like asterisks (**), bolding, or headers (#).
+- Use plain text only. 
+- For lists, use simple numbers (1., 2., etc.).
+
 CRITICAL RULE - LANGUAGE MIRRORING:
-1. DETECT USER LANGUAGE: You MUST identify the language used by the user in their latest message.
+1. DETECT USER LANGUAGE: You MUST identify the language used by the user.
 2. RESPONSE LANGUAGE: You MUST respond in the EXACT SAME language as the user.
-   - User speaks English -> You MUST respond in English.
-   - User speaks Indonesian -> You MUST respond in Indonesian.
-3. CONTEXT TRANSLATION: The 'DATABASE CONTEXT' provided below may be in Indonesian. If the user speaks English, you MUST translate the information from the context into English in your response. Do NOT respond in Indonesian if the user asked in English.
-4. STYLE MIRRORING: Match the user's tone (casual vs formal). Use slang like 'bro/gw/nih' ONLY if the user uses them first.
-5. PROACTIVE ANALYSIS: If the user tells a story or a long problem description, connect their specific complaints to the solutions found in the 'DATABASE CONTEXT'. Don't just list them; explain WHY these solutions match their story.
+3. CONTEXT TRANSLATION: If the user speaks English, translate the 'DATABASE CONTEXT' below into English.
+4. STYLE MIRRORING: Match the user's tone. Use 'bro/gw/nih' ONLY if the user uses them first.
+5. CONTEXTUAL MEMORY: Always refer to the options provided in the 'DATABASE CONTEXT' below. If the user mentions "Option 1" or "the first one", they are referring to the first item in the list below.
 
 STRICT DATABASE RULES:
 - Only provide audio advice if it exists in the 'DATABASE CONTEXT'.
-- If context is empty, decline naturally using the user's language and style.
-  * Example EN: 'I am sorry, but I couldn'\''t find any data regarding that in our system. Please contact our expert team.'
-- Never suggest solutions (tips/troubleshooting) not found in the context.
-- PRICING RULE: You MUST always include a "starting from" phrase before any price. 
-  * In Indonesian: Use "Harga mulai dari Rp" (e.g., 'Harga mulai dari Rp 1.500.000').
-  * In English: Use "Start from Rp" (e.g., 'Start from Rp 1.500.000').
-  * NEVER mention a flat price without these phrases.
+- PRICING RULE: You MUST always include "Harga mulai dari Rp" or "Start from Rp".
 
 DATABASE CONTEXT:
 {recommendations_context if has_audio_data else "NO SPECIFIC AUDIO DATA FOUND."}
@@ -151,7 +129,7 @@ DATABASE CONTEXT:
         # 5. LLM Call
         messages = [
             {"role": "system", "content": system_prompt},
-            *history[-6:], # Send last 6 messages for context (including name)
+            *history[-8:], 
             {"role": "user", "content": request.message}
         ]
 
@@ -160,7 +138,10 @@ DATABASE CONTEXT:
         # 6. Update Session History
         history.append({"role": "user", "content": request.message})
         history.append({"role": "assistant", "content": llm_response})
-        await redis.set_session_data(session_id, {"history": history})
+        await redis.set_session_data(session_id, {
+            "history": history,
+            "last_context": last_context
+        })
 
         return schemas.ChatResponse(
             session_id=session_id,
@@ -178,7 +159,3 @@ def _is_valid_uuid(val: str) -> bool:
         return True
     except ValueError:
         return False
-
-    except Exception as e:
-        logger.error(f"Error in chat endpoint: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail="An internal server error occurred.")

@@ -1,4 +1,5 @@
 import asyncpg
+import ssl
 from app.core.config import settings
 from typing import List, Dict, Any
 
@@ -100,11 +101,15 @@ class DatabaseService:
         await self.execute(query, str(embedding), chunk_id)
 
 async def get_db_pool():
+    # Menggunakan ssl=True adalah cara paling standar bagi asyncpg untuk koneksi ke Neon
+    # Sertakan juga timeout yang lebih tinggi untuk proses autentikasi
     return await asyncpg.create_pool(
         dsn=settings.DATABASE_URL,
-        min_size=settings.DATABASE_POOL_SIZE,
+        min_size=1, # Kecilkan min_size untuk mempercepat startup di Windows
         max_size=settings.DATABASE_MAX_OVERFLOW,
-        timeout=settings.DATABASE_POOL_TIMEOUT
+        timeout=60,
+        command_timeout=60,
+        ssl=True
     )
 
 db_pool = None

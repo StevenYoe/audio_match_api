@@ -32,9 +32,9 @@ class Settings(BaseSettings):
     VOYAGE_RATE_LIMIT_DELAY: int = Field(21, description="Same as interval")
 
 
-    # LLM Configuration (Using Poe API)
-    POE_API_KEY: str = Field(..., description="Poe API Key")
-    LLM_MODEL: str = Field("Assistant", description="LLM model")
+    # LLM Configuration (Using Gemini API)
+    GEMINI_API_KEY: str = Field(..., description="Gemini API Key")
+    LLM_MODEL: str = Field("gemini-1.5-flash", description="LLM model")
     LLM_MAX_TOKENS: int = Field(2000, description="Max tokens for LLM response")
     LLM_TEMPERATURE: float = Field(0.1, description="LLM temperature")
     LLM_TIMEOUT: int = Field(30, description="LLM timeout")
