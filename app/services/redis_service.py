@@ -28,19 +28,23 @@ class RedisService:
         await self.set(f"cache:{key}", value, ttl=settings.REDIS_CACHE_TTL)
 
 async def get_redis_client():
-    # Parse the URL provided in settings
-    new_url = urlparse(settings.UPSTASH_REDIS_REST_URL)
+    # Upstash menyediakan Redis URL yang diawali dengan rediss://
+    # Jika URL yang diberikan diawali dengan https:// (REST URL), kita coba ubah ke protokol redis
+    redis_url = settings.UPSTASH_REDIS_REST_URL
+    if redis_url.startswith("https://"):
+        redis_url = redis_url.replace("https://", "rediss://")
     
-    # Use port from URL if present, otherwise default to 6379
-    # We avoid guessing port from hostname as it can be unreliable
-    port = new_url.port or 6379
+    # Menambahkan password ke URL jika belum ada
+    if settings.UPSTASH_REDIS_REST_TOKEN and "@" not in redis_url:
+        # Format: rediss://:password@hostname:port
+        parts = redis_url.split("://")
+        if len(parts) == 2:
+            redis_url = f"{parts[0]}://:{settings.UPSTASH_REDIS_REST_TOKEN}@{parts[1]}"
 
-    return redis.Redis(
-        host=new_url.hostname,
-        port=port,
-        password=settings.UPSTASH_REDIS_REST_TOKEN,
-        ssl=True,
-        decode_responses=True
+    return redis.from_url(
+        redis_url,
+        decode_responses=True,
+        ssl_cert_reqs=None # Seringkali diperlukan di lingkungan serverless untuk menghindari masalah verifikasi CA
     )
 
 redis_client = None
