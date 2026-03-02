@@ -28,23 +28,34 @@ class RedisService:
         await self.set(f"cache:{key}", value, ttl=settings.REDIS_CACHE_TTL)
 
 async def get_redis_client():
-    # Upstash menyediakan Redis URL yang diawali dengan rediss://
-    # Jika URL yang diberikan diawali dengan https:// (REST URL), kita coba ubah ke protokol redis
-    redis_url = settings.UPSTASH_REDIS_REST_URL
+    # Ambil URL dan Token, bersihkan dari spasi atau tanda petik yang tidak sengaja
+    raw_url = settings.UPSTASH_REDIS_REST_URL.strip().strip('"').strip("'")
+    token = settings.UPSTASH_REDIS_REST_TOKEN.strip().strip('"').strip("'")
+    
+    redis_url = raw_url
+    # Jika URL yang diberikan diawali dengan https:// (REST URL), kita ubah ke protokol redis
     if redis_url.startswith("https://"):
         redis_url = redis_url.replace("https://", "rediss://")
     
-    # Menambahkan password ke URL jika belum ada
-    if settings.UPSTASH_REDIS_REST_TOKEN and "@" not in redis_url:
-        # Format: rediss://:password@hostname:port
+    # Jika tidak ada skema sama sekali, tambahkan rediss://
+    if "://" not in redis_url:
+        redis_url = f"rediss://{redis_url}"
+    
+    # Pastikan ada port (Upstash default 6379)
+    if ":" not in redis_url.replace("rediss://", ""):
+        redis_url = f"{redis_url}:6379"
+    
+    # Menambahkan password/token ke URL
+    # Format akhir yang diinginkan: rediss://:TOKEN@HOSTNAME:PORT
+    if "@" not in redis_url:
         parts = redis_url.split("://")
         if len(parts) == 2:
-            redis_url = f"{parts[0]}://:{settings.UPSTASH_REDIS_REST_TOKEN}@{parts[1]}"
+            redis_url = f"{parts[0]}://:{token}@{parts[1]}"
 
     return redis.from_url(
         redis_url,
         decode_responses=True,
-        ssl_cert_reqs=None # Seringkali diperlukan di lingkungan serverless untuk menghindari masalah verifikasi CA
+        ssl_cert_reqs=None
     )
 
 redis_client = None

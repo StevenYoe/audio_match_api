@@ -1,5 +1,5 @@
 import httpx
-from typing import List
+from typing import List, Optional
 from tenacity import retry, stop_after_attempt, wait_fixed, retry_if_exception_type
 from app.core.config import settings
 
@@ -45,6 +45,11 @@ class EmbeddingService:
         result = response.json()
         return [item['embedding'] for item in result['data']]
 
+# Global client for the service
+_embedding_client: Optional[httpx.AsyncClient] = None
+
 def get_embedding_service() -> EmbeddingService:
-    client = httpx.AsyncClient(timeout=settings.LLM_TIMEOUT)
-    return EmbeddingService(client)
+    global _embedding_client
+    if _embedding_client is None:
+        _embedding_client = httpx.AsyncClient(timeout=settings.LLM_TIMEOUT)
+    return EmbeddingService(_embedding_client)
