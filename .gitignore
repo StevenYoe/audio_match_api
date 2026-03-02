@@ -46,6 +46,5 @@ Thumbs.db
 # Project specific
 .vercel/
 app/core/__pycache__/config.cpython-314.pyc
-app/core/__pycache__/config.cpython-314.pyc
 app/services/__pycache__/database_service.cpython-314.pyc
-app/services/__pycache__/llm_service.cpython-314.pyc
+app/services/__pycache__/llm_service.cpython-314.py
