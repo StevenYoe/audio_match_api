@@ -24,7 +24,7 @@ async def chat(
     llm_service: LLMService = Depends(get_llm_service_dep),
 ):
     """
-    HYBRID CHATBOT: Flexible for greetings, STRICT for audio data.
+    HYBRID CHATBOT: High intelligence, low LLM cost, perfect tone mirroring.
     """
     try:
         # 1. Session Management
@@ -38,14 +38,13 @@ async def chat(
         last_context = session_data.get("last_context", "")
         last_recs = session_data.get("last_recs", [])
 
-        # 2. Get Current Time (WIB)
+        # 2. Context Retrieval & Intelligence
         wib = pytz.timezone('Asia/Jakarta')
-        now = datetime.now(wib)
-        current_time_str = now.strftime("%H:%M")
+        current_time_str = datetime.now(wib).strftime("%H:%M")
         
-        # 3. Intelligent Context Retrieval
-        # Check if user is referencing previous options (e.g., "opsi ketiga", "nomor 1")
-        is_referencing = any(word in request.message.lower() for word in ["opsi", "nomor", "pilihan", "itu", "menarik", "lanjut", "pertama", "kedua", "ketiga", "keempat", "kelima"]) and len(request.message.split()) < 8
+        # Reference detection (Increased flexibility)
+        ref_keywords = ["opsi", "nomor", "pilihan", "itu", "menarik", "lanjut", "pertama", "kedua", "ketiga", "keempat", "kelima", "yang", "ini"]
+        is_referencing = any(word in request.message.lower() for word in ref_keywords) and len(request.message.split()) < 20
         
         recommendations_context = ""
         knowledge_context = ""
@@ -53,12 +52,12 @@ async def chat(
         recommendations = []
 
         if is_referencing and last_context:
-            logger.info(f"User is referencing previous context for session {session_id}. Reusing last context.")
+            logger.info(f"Context Reuse: Session {session_id}")
             recommendations_context = last_context
             recommendations = last_recs
             has_audio_data = True
         else:
-            # HYBRID SEARCH
+            # New Search
             search_query = request.message
             embedding = await embedding_service.get_embedding(search_query, input_type="query")
             vector_problems = await db.search_problem(embedding)
@@ -81,7 +80,6 @@ async def chat(
                     recommendations_context = f"\nUSER PROBLEM: {matched_problem_title}\nAVAILABLE SOLUTIONS:\n"
                     sol_map = {}
                     for i, rec in enumerate(raw_recs):
-                        # Use "Opsi X" format to help the LLM mapping
                         recommendations_context += f"Opsi {i+1}. {rec['solution_title']}: {rec['product_name']} ({rec['product_category']}) - Start from Rp {rec['product_price']}\n"
                         
                         sid = str(rec['solution_id'])
@@ -107,34 +105,36 @@ async def chat(
             if k_chunks:
                 knowledge_context = "\nGENERAL KNOWLEDGE:\n" + "\n".join([f"- {k['mkc_content']}" for k in k_chunks])
 
-        # 4. Build Flexible but Strict System Prompt
+        # 3. Enhanced System Prompt (Restoring LSM & Tone)
         context_to_inject = recommendations_context if has_audio_data else "NO SPECIFIC AUDIO DATA FOUND."
 
         system_prompt = f"""
-You are an expert AI Sales Assistant for AudioMatch. 
-Current Time: {current_time_str}.
+You are AudioMatch Expert Sales Assistant.
+Time: {current_time_str}.
 
-FORMATTING RULES:
-- DO NOT use any Markdown formatting like asterisks (**), bolding, or headers (#).
-- Use plain text only. 
+STYLE & LANGUAGE MIRRORING (CRITICAL):
+1. LANGUAGE: Respond in the EXACT same language as the user.
+2. TONE: Mirror the user's tone. If they are casual ("bro/gw/nih/dong"), YOU MUST be casual. If they are formal, you be formal.
+3. NO GREETINGS: Do not say "Halo", "Selamat Pagi", or "Ada yang bisa dibantu" if the user didn't greet you first. Just answer directly.
+4. PLAIN TEXT ONLY: No Markdown (* or #).
 
 STRICT DATABASE RULES:
-- You MUST answer using the 'DATABASE CONTEXT' below.
-- If the user selects an option (e.g., "opsi 2", "yang ketiga"), you MUST find the corresponding "Opsi X" in the list below and explain it in detail.
-- DO NOT say you lack information if the option exists in the list.
-- PRICING RULE: Always include "Harga mulai dari Rp" or "Start from Rp".
+- Use 'DATABASE CONTEXT' below.
+- If user refers to an option (e.g., "opsi ketiga", "nomor 2"), look for that "Opsi X" in the list below and explain it.
+- NEVER say you don't have information if the option is in the list.
+- PRICING: Always include "Harga mulai dari Rp" or "Start from Rp".
 
 DATABASE CONTEXT:
 {context_to_inject}
 {knowledge_context if knowledge_context else "NO GENERAL KNOWLEDGE DATA FOUND."}
 """
 
-        # Dynamic System Note to force the LLM to map "ketiga" to "Opsi 3"
+        # System Note Injection for precise mapping
         user_message_for_llm = request.message
         if is_referencing and has_audio_data:
-            user_message_for_llm += "\n\n[SYSTEM NOTE: The user is choosing an option. Map their choice (e.g., 'ketiga' = 3) to the 'Opsi X' in the DATABASE CONTEXT and explain it. DO NOT say you don't have the data.]"
+            user_message_for_llm += "\n\n[SYSTEM NOTE: User is choosing an option. Map their choice to 'Opsi X' in the list and explain it detail. Mirror their style.]"
 
-        # 5. LLM Call
+        # 4. LLM Execution
         messages = [
             {"role": "system", "content": system_prompt},
             *history[-8:], 
@@ -143,7 +143,7 @@ DATABASE CONTEXT:
 
         llm_response = await llm_service.get_chat_completion(messages)
 
-        # 6. Update Session History
+        # 5. Session Save
         history.append({"role": "user", "content": request.message})
         history.append({"role": "assistant", "content": llm_response})
         await redis.set_session_data(session_id, {
@@ -159,7 +159,7 @@ DATABASE CONTEXT:
         )
 
     except Exception as e:
-        logger.error(f"Error in chat: {e}", exc_info=True)
+        logger.error(f"Error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal server error.")
 
 def _is_valid_uuid(val: str) -> bool:
