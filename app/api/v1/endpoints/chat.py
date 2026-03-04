@@ -33,9 +33,10 @@ async def chat(
             session_id = str(uuid.uuid4())
             await redis.set_session_data(session_id, {"history": [], "last_context": ""})
         
-        session_data = await redis.get_session_data(session_id) or {"history": [], "last_context": ""}
+        session_data = await redis.get_session_data(session_id) or {"history": [], "last_context": "", "last_recs": []}
         history = session_data.get("history", [])
         last_context = session_data.get("last_context", "")
+        last_recs = session_data.get("last_recs", [])
 
         # 2. Get Current Time (WIB)
         wib = pytz.timezone('Asia/Jakarta')
@@ -54,6 +55,7 @@ async def chat(
         if is_referencing and last_context:
             logger.info(f"User is referencing previous context for session {session_id}. Reusing last context.")
             recommendations_context = last_context
+            recommendations = last_recs # Restore the UI cards too
             has_audio_data = True
         else:
             # HYBRID SEARCH: Use raw message directly to save LLM quota (One call policy)
@@ -66,7 +68,6 @@ async def chat(
             # 2. Lexical Search
             lexical_problems = await db.search_problem_lexical(search_query)
             
-            # ... (rest of logic)
             problems = []
             if lexical_problems and lexical_problems[0]['similarity'] > 0.5:
                 problems = lexical_problems
@@ -106,15 +107,20 @@ async def chat(
                             "image": rec.get('product_image') or "⚡"
                         })
                     recommendations = list(sol_map.values())
-                    # CRITICAL: Save this context for the next turn
                     last_context = recommendations_context
+                    last_recs = recommendations
 
             k_chunks = await db.search_knowledge(embedding) if not is_referencing else []
             if k_chunks:
                 knowledge_context = "\nGENERAL KNOWLEDGE:\n" + "\n".join([f"- {k['mkc_content']}" for k in k_chunks])
 
-
         # 4. Build Flexible but Strict System Prompt
+        context_to_inject = ""
+        if has_audio_data:
+            context_to_inject = recommendations_context
+        else:
+            context_to_inject = "NO SPECIFIC AUDIO DATA FOUND."
+
         system_prompt = f"""
 You are an expert AI Sales Assistant for AudioMatch. 
 Current Time: {current_time_str}.
@@ -127,16 +133,16 @@ FORMATTING RULES:
 CRITICAL RULE - LANGUAGE MIRRORING:
 1. DETECT USER LANGUAGE: You MUST identify the language used by the user.
 2. RESPONSE LANGUAGE: You MUST respond in the EXACT SAME language as the user.
-3. CONTEXT TRANSLATION: If the user speaks English, translate the 'DATABASE CONTEXT' below into English.
-4. STYLE MIRRORING: Match the user's tone. Use 'bro/gw/nih' ONLY if the user uses them first.
-5. CONTEXTUAL MEMORY: Always refer to the options provided in the 'DATABASE CONTEXT' below. If the user mentions "Option 1" or "the first one", they are referring to the first item in the list below.
+3. STYLE MIRRORING: Match the user's tone. Use 'bro/gw/nih' ONLY if the user uses them first.
+4. CONTEXTUAL MEMORY: Always refer to the options provided in the 'DATABASE CONTEXT' below. 
+   - If the user mentions "Option 1" or "opsi ketiga", they are referring to the numbered list in the DATABASE CONTEXT.
 
 STRICT DATABASE RULES:
 - Only provide audio advice if it exists in the 'DATABASE CONTEXT'.
 - PRICING RULE: You MUST always include "Harga mulai dari Rp" or "Start from Rp".
 
 DATABASE CONTEXT:
-{recommendations_context if has_audio_data else "NO SPECIFIC AUDIO DATA FOUND."}
+{context_to_inject}
 {knowledge_context if knowledge_context else "NO GENERAL KNOWLEDGE DATA FOUND."}
 """
 
@@ -154,8 +160,10 @@ DATABASE CONTEXT:
         history.append({"role": "assistant", "content": llm_response})
         await redis.set_session_data(session_id, {
             "history": history,
-            "last_context": last_context
+            "last_context": last_context,
+            "last_recs": last_recs
         })
+
 
         return schemas.ChatResponse(
             session_id=session_id,
