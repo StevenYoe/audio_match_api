@@ -135,27 +135,33 @@ CRITICAL RULE - LANGUAGE MIRRORING:
 2. RESPONSE LANGUAGE: You MUST respond in the EXACT SAME language as the user.
 3. STYLE MIRRORING: Match the user's tone. Use 'bro/gw/nih' ONLY if the user uses them first.
 4. CONTEXTUAL MEMORY: Always refer to the options provided in the 'DATABASE CONTEXT' below. 
-   - If the user mentions "Option 1" or "opsi ketiga", they are referring to the numbered list in the DATABASE CONTEXT.
 
 STRICT DATABASE RULES:
-- Only provide audio advice if it exists in the 'DATABASE CONTEXT'.
-- PRICING RULE: You MUST always include "Harga mulai dari Rp" or "Start from Rp".
+- You MUST answer using the 'DATABASE CONTEXT' below.
+- If the user refers to an option number (e.g., "opsi 1", "yang kedua", "nomor 3"), look at the numbered list in the 'AVAILABLE SOLUTIONS' section and explain that specific item enthusiastically. 
+- DO NOT say you lack information if the numbered item is present in the list.
+- PRICING RULE: You MUST always include "Harga mulai dari Rp" or "Start from Rp" when discussing products.
 
 DATABASE CONTEXT:
 {context_to_inject}
 {knowledge_context if knowledge_context else "NO GENERAL KNOWLEDGE DATA FOUND."}
 """
 
+        # Dynamic System Note Injection to force LLM to understand references
+        user_message_for_llm = request.message
+        if is_referencing and has_audio_data:
+            user_message_for_llm += "\n\n[SYSTEM NOTE: The user is referring to a specific option from the list you provided earlier. Please map their reference (e.g., 'kedua' = 2) to the numbered list in the DATABASE CONTEXT and provide more details about that specific option.]"
+
         # 5. LLM Call
         messages = [
             {"role": "system", "content": system_prompt},
             *history[-8:], 
-            {"role": "user", "content": request.message}
+            {"role": "user", "content": user_message_for_llm}
         ]
 
         llm_response = await llm_service.get_chat_completion(messages)
 
-        # 6. Update Session History
+        # 6. Update Session History (Save the original message, not the one with the system note)
         history.append({"role": "user", "content": request.message})
         history.append({"role": "assistant", "content": llm_response})
         await redis.set_session_data(session_id, {
