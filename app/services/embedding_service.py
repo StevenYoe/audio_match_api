@@ -14,7 +14,7 @@ class EmbeddingService:
 
     @retry(
         wait=wait_fixed(settings.VOYAGE_RATE_LIMIT_DELAY),
-        stop=stop_after_attempt(5),
+        stop=stop_after_attempt(settings.LLM_MAX_RETRIES),
         retry=retry_if_exception_type(httpx.HTTPStatusError),
     )
     async def get_embedding(self, text: str, input_type: str = None) -> List[float]:
@@ -26,7 +26,7 @@ class EmbeddingService:
 
     @retry(
         wait=wait_fixed(settings.VOYAGE_RATE_LIMIT_DELAY),
-        stop=stop_after_attempt(5),
+        stop=stop_after_attempt(settings.LLM_MAX_RETRIES),
         retry=retry_if_exception_type(httpx.HTTPStatusError),
     )
     async def get_embeddings(self, texts: List[str], input_type: str = None) -> List[List[float]]:

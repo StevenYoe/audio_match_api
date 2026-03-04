@@ -15,7 +15,7 @@ class LLMService:
 
     @retry(
         wait=wait_exponential(multiplier=1, min=2, max=10),
-        stop=stop_after_attempt(5),
+        stop=stop_after_attempt(settings.LLM_MAX_RETRIES),
         retry=retry_if_exception_type(httpx.HTTPStatusError),
         reraise=True
     )

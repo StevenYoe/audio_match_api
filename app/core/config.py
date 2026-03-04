@@ -35,6 +35,7 @@ class Settings(BaseSettings):
     # LLM Configuration (Using Gemini API)
     GEMINI_API_KEY: str = Field(..., description="Gemini API Key")
     LLM_MODEL: str = Field("gemini-1.5-flash", description="LLM model")
+    LLM_MAX_RETRIES: int = Field(3, description="Max retries for LLM API calls")
     LLM_MAX_TOKENS: int = Field(2000, description="Max tokens for LLM response")
     LLM_TEMPERATURE: float = Field(0.1, description="LLM temperature")
     LLM_TIMEOUT: int = Field(30, description="LLM timeout")
