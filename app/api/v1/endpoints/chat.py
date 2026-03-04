@@ -56,15 +56,15 @@ async def chat(
             recommendations_context = last_context
             has_audio_data = True
         else:
-            # HYBRID SEARCH: Vector (Semantic) + Lexical (Keyword)
-            extracted_intent = await llm_service.extract_audio_intent(request.message)
+            # HYBRID SEARCH: Use raw message directly to save LLM quota (One call policy)
+            search_query = request.message
             
             # 1. Vector Search (The "Smart" one)
-            embedding = await embedding_service.get_embedding(extracted_intent, input_type="query")
+            embedding = await embedding_service.get_embedding(search_query, input_type="query")
             vector_problems = await db.search_problem(embedding)
             
             # 2. Lexical Search (The "Accurate" one)
-            lexical_problems = await db.search_problem_lexical(extracted_intent)
+            lexical_problems = await db.search_problem_lexical(search_query)
             
             # 3. Hybrid Combination Logic
             # We prioritize Lexical if it finds a high-quality match (exact keyword)
