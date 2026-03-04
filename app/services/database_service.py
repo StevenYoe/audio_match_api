@@ -28,6 +28,16 @@ class DatabaseService:
         # Convert list to string for pgvector compatibility with asyncpg
         return await self.fetch(query, str(embedding), 0.4, 3)
 
+    async def search_problem_lexical(self, query_text: str) -> List[Dict[str, Any]]:
+        """
+        New Lexical Search (Keyword Matching) algorithm.
+        """
+        query = """
+        SELECT mcp_id, mcp_problem_title, similarity
+        FROM sales.search_problem_lexical($1, $2)
+        """
+        return await self.fetch(query, query_text, 3)
+
     async def get_recommendations(self, problem_id: str) -> List[Dict[str, Any]]:
         query = """
         SELECT
