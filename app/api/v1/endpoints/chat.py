@@ -43,8 +43,8 @@ async def chat(
         current_time_str = now.strftime("%H:%M")
         
         # 3. Intelligent Context Retrieval
-        # Check if user is referencing previous options
-        is_referencing = any(word in request.message.lower() for word in ["opsi", "nomor", "yang", "pilihan", "itu", "menarik", "lanjut"]) and len(request.message.split()) < 6
+        # Check if user is referencing previous options (e.g., "opsi ketiga", "nomor 1")
+        is_referencing = any(word in request.message.lower() for word in ["opsi", "nomor", "pilihan", "itu", "menarik", "lanjut", "pertama", "kedua", "ketiga", "keempat", "kelima"]) and len(request.message.split()) < 8
         
         recommendations_context = ""
         knowledge_context = ""
@@ -52,26 +52,23 @@ async def chat(
         recommendations = []
 
         if is_referencing and last_context:
-            logger.info("User is referencing previous context. Reusing last context.")
+            logger.info(f"User is referencing previous context for session {session_id}. Reusing last context.")
             recommendations_context = last_context
             has_audio_data = True
         else:
             # HYBRID SEARCH: Use raw message directly to save LLM quota (One call policy)
             search_query = request.message
             
-            # 1. Vector Search (The "Smart" one)
+            # 1. Vector Search
             embedding = await embedding_service.get_embedding(search_query, input_type="query")
             vector_problems = await db.search_problem(embedding)
             
-            # 2. Lexical Search (The "Accurate" one)
+            # 2. Lexical Search
             lexical_problems = await db.search_problem_lexical(search_query)
             
-            # 3. Hybrid Combination Logic
-            # We prioritize Lexical if it finds a high-quality match (exact keyword)
-            # Otherwise, use Vector.
+            # ... (rest of logic)
             problems = []
             if lexical_problems and lexical_problems[0]['similarity'] > 0.5:
-                logger.info("Lexical Search match found. High priority.")
                 problems = lexical_problems
             else:
                 problems = vector_problems
@@ -109,11 +106,13 @@ async def chat(
                             "image": rec.get('product_image') or "⚡"
                         })
                     recommendations = list(sol_map.values())
+                    # CRITICAL: Save this context for the next turn
                     last_context = recommendations_context
 
             k_chunks = await db.search_knowledge(embedding) if not is_referencing else []
             if k_chunks:
                 knowledge_context = "\nGENERAL KNOWLEDGE:\n" + "\n".join([f"- {k['mkc_content']}" for k in k_chunks])
+
 
         # 4. Build Flexible but Strict System Prompt
         system_prompt = f"""
