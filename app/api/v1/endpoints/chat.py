@@ -63,20 +63,34 @@ async def chat(
                 recommendations_context = f"\nUSER PROBLEM: {matched_problem_title}\n"
                 if matched_problem_approach:
                     recommendations_context += f"RECOMMENDED APPROACH: {matched_problem_approach}\n\n"
-                recommendations_context += "RECOMMENDED PRODUCTS:\n"
+                
+                # Group products by category for better organization
+                products_by_category = {}
+                for rec in raw_recs:
+                    cat = rec['product_category']
+                    if cat not in products_by_category:
+                        products_by_category[cat] = []
+                    products_by_category[cat].append(rec)
+                
+                recommendations_context += "AVAILABLE PRODUCTS (organized by category, premium first):\n"
 
                 solution_products = []
-                for i, rec in enumerate(raw_recs):
-                    recommendations_context += f"Opsi {i+1}. {rec['product_name']} ({rec['product_category']}) - Rp {rec['product_price']}\n"
-                    recommendations_context += f"   {rec['product_description']}\n"
-                    all_products_context.append(rec)
-                    solution_products.append({
-                        "product_id": str(rec['product_id']),
-                        "product_name": rec['product_name'],
-                        "product_category": rec['product_category'],
-                        "product_price": float(rec['product_price']),
-                        "image": rec.get('product_image') or "⚡"
-                    })
+                option_counter = 1
+                for category in sorted(products_by_category.keys()):
+                    category_products = products_by_category[category]
+                    recommendations_context += f"\n[{category.upper().replace('_', ' ')}]\n"
+                    for rec in category_products:
+                        recommendations_context += f"Opsi {option_counter}. {rec['product_name']} - Rp {rec['product_price']}\n"
+                        recommendations_context += f"   {rec['product_description']}\n"
+                        rec['option_number'] = option_counter
+                        option_counter += 1
+                        solution_products.append({
+                            "product_id": str(rec['product_id']),
+                            "product_name": rec['product_name'],
+                            "product_category": rec['product_category'],
+                            "product_price": float(rec['product_price']),
+                            "image": rec.get('product_image') or "⚡"
+                        })
 
                 recommendations = [{
                     "solution_id": str(problems[0]['mcp_id']),
@@ -100,10 +114,22 @@ async def chat(
                     brand_products = await db.get_products_by_brand(brand)
                     if brand_products:
                         all_products_context.extend(brand_products)
-                        recommendations_context += f"\n\n{brand.upper()} PRODUCTS IN DATABASE:\n"
-                        for i, prod in enumerate(brand_products):
-                            recommendations_context += f"- {prod['product_name']} ({prod['product_category']}) - Rp {prod['product_price']}\n"
-                            recommendations_context += f"  {prod['product_description']}\n"
+                        recommendations_context += f"\n\n{brand.upper()} PRODUCTS IN DATABASE (premium first):\n"
+                        
+                        # Group by category for better organization
+                        brand_by_category = {}
+                        for prod in brand_products:
+                            cat = prod['product_category']
+                            if cat not in brand_by_category:
+                                brand_by_category[cat] = []
+                            brand_by_category[cat].append(prod)
+                        
+                        for category in sorted(brand_by_category.keys()):
+                            category_products = brand_by_category[category]
+                            recommendations_context += f"\n[{category.upper().replace('_', ' ')}]\n"
+                            for prod in category_products:
+                                recommendations_context += f"- {prod['product_name']} - Rp {prod['product_price']}\n"
+                                recommendations_context += f"  {prod['product_description']}\n"
 
                 # Build a single RecommendedSolution with all brand products
                 if all_products_context:
@@ -129,10 +155,22 @@ async def chat(
                 all_products = await db.get_all_active_products()
                 if all_products:
                     all_products_context.extend(all_products)
-                    recommendations_context += "\n\nALL PRODUCTS IN DATABASE:\n"
+                    recommendations_context += "\n\nALL PRODUCTS IN DATABASE (organized by category, premium first):\n"
+                    
+                    # Group by category and brand tier
+                    products_by_category = {}
                     for prod in all_products:
-                        recommendations_context += f"- {prod['product_name']} ({prod['product_category']}) - Rp {prod['product_price']}\n"
-                        recommendations_context += f"  {prod['product_description']}\n"
+                        cat = prod['product_category']
+                        if cat not in products_by_category:
+                            products_by_category[cat] = []
+                        products_by_category[cat].append(prod)
+                    
+                    for category in sorted(products_by_category.keys()):
+                        category_products = products_by_category[category]
+                        recommendations_context += f"\n[{category.upper().replace('_', ' ')}]\n"
+                        for prod in category_products:
+                            recommendations_context += f"- {prod['product_name']} - Rp {prod['product_price']}\n"
+                            recommendations_context += f"  {prod['product_description']}\n"
 
                     solution_products = [
                         {
@@ -177,13 +215,30 @@ RULES:
   * Recommend based on use case (budget vs quality vs SPL)
 - If user mentions BUDGET:
   * Recommend products within their budget range
-  * Mention "Start from Rp [price]" for each product
+  * Mention "Harga: Rp [price]" for each product
   * Prioritize best value for money
+  * For HIGH BUDGET (above 10 juta): RECOMMEND ALL products from the context including premium brands (JL Audio, Rockford Fosgate, Hertz, Nakamichi, Clarion)
+  * For MEDIUM BUDGET (5-10 juta): Focus on mid-range brands (Pioneer, Kenwood, JVC, Exxent) but also mention premium options
+  * For LOW BUDGET (below 5 juta): Focus on budget brands (Skeleton, DHD, Avix, Orca)
+- If user mentions a SPECIFIC BRAND (e.g., "Kenwood"):
+  * SHOW ALL available products from that brand across ALL categories
+  * Organize by category: Head Unit, Speaker (Component/Coaxial), Subwoofer, Amplifier, etc.
+  * Recommend a COMPLETE PACKAGE that includes products from different categories if applicable
+  * DO NOT just show 1-2 products - show the full range available
+- If user asks for PACKAGE/PAKET recommendations:
+  * Include products from MULTIPLE categories to form a complete system
+  * Example complete package: Head Unit + Speaker Depan + Speaker Belakang + Subwoofer + Amplifier
+  * Calculate total package price and mention it
+  * Explain what each component contributes to the system
 - If user mentions "opsi X" or "nomor X", explain that specific product from the list.
-- ALWAYS include pricing in format: "Rp [price]" or "Harga mulai dari Rp [price]".
+- ALWAYS include pricing in format: "Rp [price]" or "Harga: Rp [price]".
 - Respond in the same language as the user (Indonesian or English).
 - Use plain text only (no markdown formatting like * or #).
-- For brand comparison questions, explain the brand positioning:
+- STRUCTURE your response clearly:
+  * Use numbered lists for product recommendations
+  * Group products by category when recommending packages
+  * Explain WHY each product is recommended
+- For brand positioning guidance:
   * Budget: Skeleton, DHD, Avix, Orca
   * Mid-range: Pioneer, Kenwood, JVC, Exxent
   * Premium: Nakamichi, Clarion, Hertz, JL Audio, Rockford Fosgate

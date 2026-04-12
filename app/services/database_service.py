@@ -29,7 +29,12 @@ class DatabaseService:
         return await self.fetch(query, str(embedding), 0.4, 3)
 
     async def get_recommendations(self, problem_id: str) -> List[Dict[str, Any]]:
-        """Get products linked to a problem via direct FK."""
+        """Get products linked to a problem via direct FK.
+        
+        Products are ordered by price DESC (premium first) to ensure high-quality
+        products are surfaced prominently. Budget products are still available
+        but appear later in the list.
+        """
         query = """
         SELECT
             p.mp_id as product_id,
@@ -47,12 +52,22 @@ class DatabaseService:
         WHERE p.mp_solves_problem_id = $1
           AND p.mp_is_active = TRUE
           AND prob.mcp_is_active = TRUE
-        ORDER BY p.mp_name ASC;
+        ORDER BY 
+            CASE 
+                WHEN p.mp_brand IN ('JL Audio', 'Rockford Fosgate', 'Hertz', 'Nakamichi', 'Clarion') THEN 1
+                WHEN p.mp_brand IN ('Pioneer', 'Kenwood', 'JVC', 'Exxent') THEN 2
+                ELSE 3
+            END ASC,
+            p.mp_price DESC;
         """
         return await self.fetch(query, problem_id)
 
     async def get_products_by_brand(self, brand: str) -> List[Dict[str, Any]]:
-        """Get all active products for a specific brand."""
+        """Get all active products for a specific brand.
+        
+        Products are ordered by price DESC (premium first) to surface high-end
+        products prominently when user has sufficient budget.
+        """
         query = """
         SELECT
             mp_id as product_id,
@@ -65,7 +80,7 @@ class DatabaseService:
         FROM sales.master_products
         WHERE LOWER(mp_brand) = LOWER($1)
           AND mp_is_active = TRUE
-        ORDER BY mp_price ASC;
+        ORDER BY mp_price DESC;
         """
         return await self.fetch(query, brand)
 
