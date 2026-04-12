@@ -51,6 +51,41 @@ class DatabaseService:
         """
         return await self.fetch(query, problem_id)
 
+    async def get_products_by_brand(self, brand: str) -> List[Dict[str, Any]]:
+        """Get all active products for a specific brand."""
+        query = """
+        SELECT
+            mp_id as product_id,
+            mp_name as product_name,
+            mp_category as product_category,
+            mp_brand as product_brand,
+            mp_price as product_price,
+            mp_description as product_description,
+            mp_image as product_image
+        FROM sales.master_products
+        WHERE LOWER(mp_brand) = LOWER($1)
+          AND mp_is_active = TRUE
+        ORDER BY mp_price ASC;
+        """
+        return await self.fetch(query, brand)
+
+    async def get_all_active_products(self) -> List[Dict[str, Any]]:
+        """Get all active products."""
+        query = """
+        SELECT
+            mp_id as product_id,
+            mp_name as product_name,
+            mp_category as product_category,
+            mp_brand as product_brand,
+            mp_price as product_price,
+            mp_description as product_description,
+            mp_image as product_image
+        FROM sales.master_products
+        WHERE mp_is_active = TRUE
+        ORDER BY mp_category, mp_price ASC;
+        """
+        return await self.fetch(query)
+
     async def insert_products(self, products: List[Dict[str, Any]]) -> int:
         """Bulk insert products."""
         if not products:

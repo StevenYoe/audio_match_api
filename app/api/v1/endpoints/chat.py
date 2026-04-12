@@ -45,6 +45,7 @@ async def chat(
 
         recommendations_context = ""
         recommendations = []
+        all_products_context = []
 
         if problems:
             raw_recs = []
@@ -63,10 +64,11 @@ async def chat(
                 if matched_problem_approach:
                     recommendations_context += f"RECOMMENDED APPROACH: {matched_problem_approach}\n\n"
                 recommendations_context += "RECOMMENDED PRODUCTS:\n"
-                
+
                 for i, rec in enumerate(raw_recs):
                     recommendations_context += f"Opsi {i+1}. {rec['product_name']} ({rec['product_category']}) - Rp {rec['product_price']}\n"
                     recommendations_context += f"   {rec['product_description']}\n"
+                    all_products_context.append(rec)
 
                 recommendations = [
                     {
@@ -81,12 +83,79 @@ async def chat(
                     for rec in raw_recs
                 ]
 
+        # Fallback: If no problem matched, try to get products by brand mention or general search
+        if not recommendations:
+            logger.info(f"No problem matched, trying brand/product search for query: {search_query}")
+            # Extract brand mentions from query
+            query_lower = search_query.lower()
+            known_brands = ['kenwood', 'pioneer', 'jvc', 'nakamichi', 'clarion', 'hertz', 'jl audio', 'rockford fosgate', 'skeleton', 'dhd', 'avix', 'orca', 'exxent']
+            mentioned_brands = [brand for brand in known_brands if brand in query_lower]
+
+            if mentioned_brands:
+                logger.info(f"Found brand mentions: {mentioned_brands}")
+                # Get products for mentioned brands
+                for brand in mentioned_brands:
+                    brand_products = await db.get_products_by_brand(brand)
+                    if brand_products:
+                        all_products_context.extend(brand_products)
+                        recommendations_context += f"\n\n{brand.upper()} PRODUCTS IN DATABASE:\n"
+                        for i, prod in enumerate(brand_products):
+                            recommendations_context += f"- {prod['product_name']} ({prod['product_category']}) - Rp {prod['product_price']}\n"
+                            recommendations_context += f"  {prod['product_description']}\n"
+
+                # Build recommendations from brand products
+                recommendations = [
+                    {
+                        "product_id": str(prod['product_id']),
+                        "product_name": prod['product_name'],
+                        "product_category": prod['product_category'],
+                        "product_price": float(prod['product_price']),
+                        "image": prod.get('product_image') or "⚡",
+                        "problem_title": "",
+                        "recommended_approach": ""
+                    }
+                    for prod in all_products_context
+                ]
+            else:
+                # No brand mentioned, get all products as fallback
+                logger.info("No brand mentioned, getting all products as fallback")
+                all_products = await db.get_all_active_products()
+                if all_products:
+                    all_products_context.extend(all_products)
+                    recommendations_context += "\n\nALL PRODUCTS IN DATABASE:\n"
+                    for prod in all_products:
+                        recommendations_context += f"- {prod['product_name']} ({prod['product_category']}) - Rp {prod['product_price']}\n"
+                        recommendations_context += f"  {prod['product_description']}\n"
+
+                    recommendations = [
+                        {
+                            "product_id": str(prod['product_id']),
+                            "product_name": prod['product_name'],
+                            "product_category": prod['product_category'],
+                            "product_price": float(prod['product_price']),
+                            "image": prod.get('product_image') or "⚡",
+                            "problem_title": "",
+                            "recommended_approach": ""
+                        }
+                        for prod in all_products
+                    ]
+
+        logger.info(f"Recommendations context length: {len(recommendations_context)}")
+        logger.info(f"Number of recommendations: {len(recommendations)}")
+
         # 3. System Prompt
         context_to_inject = recommendations_context if recommendations_context else "NO SPECIFIC DATA FOUND."
 
         system_prompt = f"""
 You are AudioMatch Expert, a car audio product recommendation assistant.
 Time: {current_time_str} (WIB).
+
+CRITICAL RULES:
+- You MUST ONLY recommend products that appear in the DATABASE CONTEXT below.
+- NEVER invent, hallucinate, or suggest products that are not explicitly listed in the context.
+- If the user asks for a specific brand, only recommend products of that brand from the context.
+- If NO products are found in the context, say "Saya tidak menemukan produk yang sesuai di database kami. Silakan hubungi kami untuk info lebih lanjut."
+- Do NOT make up product names, prices, or specifications.
 
 RULES:
 - Help users find the right products based on their problems, budget, or questions.
@@ -100,8 +169,7 @@ RULES:
   * Mention "Start from Rp [price]" for each product
   * Prioritize best value for money
 - If user mentions "opsi X" or "nomor X", explain that specific product from the list.
-- NEVER invent products or information not in the context.
-- Always include pricing in format: "Rp [price]" or "Harga mulai dari Rp [price]".
+- ALWAYS include pricing in format: "Rp [price]" or "Harga mulai dari Rp [price]".
 - Respond in the same language as the user (Indonesian or English).
 - Use plain text only (no markdown formatting like * or #).
 - For brand comparison questions, explain the brand positioning:
