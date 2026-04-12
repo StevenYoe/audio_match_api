@@ -13,17 +13,16 @@ async def sync_embeddings(
     embedding_service: EmbeddingService = Depends(get_embedding_service_dep)
 ):
     """
-    Synchronizes manual data entries with vector embeddings from VoyageAI.
-    Embeds both 'master_customer_problems' (title + description) and 'master_knowledge_chunks' (content).
+    Synchronizes data with vector embeddings from VoyageAI.
+    Embeds both problems and products that don't have embeddings yet.
     """
-    stats = {"problems_synced": 0, "knowledge_synced": 0, "errors": []}
-    
+    stats = {"problems_synced": 0, "products_synced": 0, "errors": []}
+
     try:
         # 1. Sync Problems
         unembedded_problems = await db.get_unembedded_problems()
         for prob in unembedded_problems:
             try:
-                # Combine title and description for better context
                 text_to_embed = f"{prob['mcp_problem_title']}: {prob['mcp_description'] or ''}"
                 embedding = await embedding_service.get_embedding(text_to_embed, input_type="document")
                 await db.update_problem_embedding(str(prob['mcp_id']), embedding)
@@ -32,16 +31,17 @@ async def sync_embeddings(
                 logger.error(f"Error syncing problem {prob['mcp_id']}: {e}")
                 stats["errors"].append(f"Problem {prob['mcp_id']}: {str(e)}")
 
-        # 2. Sync Knowledge Chunks
-        unembedded_knowledge = await db.get_unembedded_knowledge()
-        for chunk in unembedded_knowledge:
+        # 2. Sync Products
+        unembedded_products = await db.get_unembedded_products()
+        for prod in unembedded_products:
             try:
-                embedding = await embedding_service.get_embedding(chunk['mkc_content'], input_type="document")
-                await db.update_knowledge_embedding(str(chunk['mkc_id']), embedding)
-                stats["knowledge_synced"] += 1
+                text_to_embed = f"{prod['mp_name']} ({prod['mp_category']}): {prod['mp_description'] or ''}"
+                embedding = await embedding_service.get_embedding(text_to_embed, input_type="document")
+                await db.update_product_embedding(str(prod['mp_id']), embedding)
+                stats["products_synced"] += 1
             except Exception as e:
-                logger.error(f"Error syncing knowledge chunk {chunk['mkc_id']}: {e}")
-                stats["errors"].append(f"Knowledge {chunk['mkc_id']}: {str(e)}")
+                logger.error(f"Error syncing product {prod['mp_id']}: {e}")
+                stats["errors"].append(f"Product {prod['mp_id']}: {str(e)}")
 
         return {
             "message": "Synchronization complete.",

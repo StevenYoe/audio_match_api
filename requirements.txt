@@ -9,3 +9,7 @@ tenacity
 fastapi-limiter
 python-dotenv
 pytz
+pandas
+openpyxl
+google-generativeai
+voyageai

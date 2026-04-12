@@ -21,94 +21,119 @@ class DatabaseService:
             return await connection.execute(query, *args)
 
     async def search_problem(self, embedding: List[float]) -> List[Dict[str, Any]]:
+        """Vector similarity search on master_customer_problems."""
         query = """
-        SELECT mcp_id, mcp_problem_title, similarity
+        SELECT mcp_id, mcp_problem_title, mcp_description, mcp_recommended_approach, similarity
         FROM sales.search_problem($1, $2, $3)
         """
-        # Convert list to string for pgvector compatibility with asyncpg
         return await self.fetch(query, str(embedding), 0.4, 3)
 
-    async def search_problem_lexical(self, query_text: str) -> List[Dict[str, Any]]:
-        """
-        New Lexical Search (Keyword Matching) algorithm.
-        """
-        query = """
-        SELECT mcp_id, mcp_problem_title, similarity
-        FROM sales.search_problem_lexical($1, $2)
-        """
-        return await self.fetch(query, query_text, 3)
-
     async def get_recommendations(self, problem_id: str) -> List[Dict[str, Any]]:
+        """Get products linked to a problem via direct FK."""
         query = """
         SELECT
-            s.ms_id as solution_id,
-            s.ms_title as solution_title,
-            s.ms_description as solution_description,
             p.mp_id as product_id,
             p.mp_name as product_name,
             p.mp_category as product_category,
+            p.mp_brand as product_brand,
             p.mp_price as product_price,
-            p.mp_image as product_image
-        FROM sales.master_solutions s
-        JOIN sales.master_solution_products sp ON sp.msp_solution_id = s.ms_id
-        JOIN sales.master_products p ON p.mp_id = sp.msp_product_id
-        WHERE s.ms_problem_id = $1
-          AND s.ms_is_active = TRUE
+            p.mp_description as product_description,
+            p.mp_image as product_image,
+            prob.mcp_problem_title as problem_title,
+            prob.mcp_description as problem_description,
+            prob.mcp_recommended_approach as recommended_approach
+        FROM sales.master_products p
+        JOIN sales.master_customer_problems prob ON prob.mcp_id = p.mp_solves_problem_id
+        WHERE p.mp_solves_problem_id = $1
           AND p.mp_is_active = TRUE
-        ORDER BY s.ms_priority ASC;
+          AND prob.mcp_is_active = TRUE
+        ORDER BY p.mp_name ASC;
         """
         return await self.fetch(query, problem_id)
 
-    async def get_products(self, category: str = None) -> List[Dict[str, Any]]:
-        if category and category.lower() != "all":
-            query = "SELECT * FROM sales.master_products WHERE mp_category = $1 AND mp_is_active = TRUE ORDER BY mp_name ASC"
-            return await self.fetch(query, category)
-        else:
-            query = "SELECT * FROM sales.master_products WHERE mp_is_active = TRUE ORDER BY mp_name ASC"
-            return await self.fetch(query)
-
-    async def search_knowledge(self, embedding: List[float]) -> List[Dict[str, Any]]:
+    async def insert_products(self, products: List[Dict[str, Any]]) -> int:
+        """Bulk insert products."""
+        if not products:
+            return 0
+        
         query = """
-        SELECT mkc_id, mkc_content, similarity
-        FROM sales.search_knowledge($1, $2, $3)
+        INSERT INTO sales.master_products 
+            (mp_name, mp_category, mp_brand, mp_price, mp_description, mp_image, mp_solves_problem_id, mp_is_active)
+        VALUES 
         """
-        # Convert list to string for pgvector compatibility with asyncpg
-        return await self.fetch(query, str(embedding), 0.4, 5)
+        # Build multi-row INSERT
+        values = []
+        for i, p in enumerate(products):
+            values.append(f"(${i*8+1}, ${i*8+2}, ${i*8+3}, ${i*8+4}, ${i*8+5}, ${i*8+6}, ${i*8+7}, ${i*8+8})")
+        
+        query += ", ".join(values)
+        query += " RETURNING mp_id"
+        
+        params = []
+        for p in products:
+            params.extend([
+                p.get('mp_name'),
+                p.get('mp_category'),
+                p.get('mp_brand'),
+                p.get('mp_price'),
+                p.get('mp_description'),
+                p.get('mp_image'),
+                p.get('mp_solves_problem_id'),
+                p.get('mp_is_active', True)
+            ])
+        
+        result = await self.fetch(query, *params)
+        return len(result)
 
-    async def create_session(self, user_identifier: str) -> Dict[str, Any]:
+    async def insert_problems(self, problems: List[Dict[str, Any]]) -> int:
+        """Bulk insert problems."""
+        if not problems:
+            return 0
+        
         query = """
-        INSERT INTO sales.trx_conversation_sessions (tcs_user_identifier)
-        VALUES ($1) RETURNING tcs_id, tcs_user_identifier, tcs_started_at
+        INSERT INTO sales.master_customer_problems 
+            (mcp_problem_title, mcp_description, mcp_recommended_approach, mcp_is_active)
+        VALUES 
         """
-        return await self.fetchrow(query, user_identifier)
-    
-    async def get_session(self, session_id: str) -> Dict[str, Any]:
-        query = "SELECT * FROM sales.trx_conversation_sessions WHERE tcs_id = $1"
-        return await self.fetchrow(query, session_id)
-
-    async def log_message(self, session_id: str, role: str, content: str, related_problem: str = None):
-        query = """
-        INSERT INTO sales.trx_chat_messages (tcm_session_id, tcm_role, tcm_content, tcm_related_problem)
-        VALUES ($1, $2, $3, $4)
-        """
-        await self.execute(query, session_id, role, content, related_problem)
+        values = []
+        for i, p in enumerate(problems):
+            values.append(f"(${i*4+1}, ${i*4+2}, ${i*4+3}, ${i*4+4})")
+        
+        query += ", ".join(values)
+        query += " RETURNING mcp_id"
+        
+        params = []
+        for p in problems:
+            params.extend([
+                p.get('mcp_problem_title'),
+                p.get('mcp_description'),
+                p.get('mcp_recommended_approach'),
+                p.get('mcp_is_active', True)
+            ])
+        
+        result = await self.fetch(query, *params)
+        return len(result)
 
     # --- ADMIN/SYNC METHODS ---
     async def get_unembedded_problems(self) -> List[Dict[str, Any]]:
+        """Get problems without embeddings."""
         query = "SELECT mcp_id, mcp_problem_title, mcp_description FROM sales.master_customer_problems WHERE mcp_embedding IS NULL AND mcp_is_active = TRUE"
         return await self.fetch(query)
 
     async def update_problem_embedding(self, problem_id: str, embedding: List[float]):
+        """Update problem embedding vector."""
         query = "UPDATE sales.master_customer_problems SET mcp_embedding = $1 WHERE mcp_id = $2"
         await self.execute(query, str(embedding), problem_id)
 
-    async def get_unembedded_knowledge(self) -> List[Dict[str, Any]]:
-        query = "SELECT mkc_id, mkc_content FROM sales.master_knowledge_chunks WHERE mkc_embedding IS NULL AND mkc_is_active = TRUE"
+    async def get_unembedded_products(self) -> List[Dict[str, Any]]:
+        """Get products without embeddings."""
+        query = "SELECT mp_id, mp_name, mp_description, mp_category FROM sales.master_products WHERE mp_embedding IS NULL AND mp_is_active = TRUE"
         return await self.fetch(query)
 
-    async def update_knowledge_embedding(self, chunk_id: str, embedding: List[float]):
-        query = "UPDATE sales.master_knowledge_chunks SET mkc_embedding = $1 WHERE mkc_id = $2"
-        await self.execute(query, str(embedding), chunk_id)
+    async def update_product_embedding(self, product_id: str, embedding: List[float]):
+        """Update product embedding vector."""
+        query = "UPDATE sales.master_products SET mp_embedding = $1 WHERE mp_id = $2"
+        await self.execute(query, str(embedding), product_id)
 
 async def get_db_pool():
     # Menggunakan ssl=True adalah cara paling standar bagi asyncpg untuk koneksi ke Neon

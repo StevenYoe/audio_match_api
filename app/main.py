@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
-from app.api.v1.endpoints import chat, admin, products
+from app.api.v1.endpoints import chat, admin, import_data
 from app.services import database_service, redis_service
 
 # Configure logging
@@ -32,7 +32,7 @@ if settings.CORS_ORIGINS:
 # Include routers
 app.include_router(chat.router, prefix="/api/v1/chat", tags=["Chat"])
 app.include_router(admin.router, prefix="/api/v1/admin", tags=["Admin"])
-app.include_router(products.router, prefix="/api/v1/products", tags=["Products"])
+app.include_router(import_data.router, prefix="/api/v1/admin/import-data", tags=["Data Import"])
 
 @app.on_event("startup")
 async def startup_event():
