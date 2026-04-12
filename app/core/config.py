@@ -39,9 +39,9 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: str = Field(default="", description="Gemini API Key")
     LLM_MODEL: str = Field("gemini-1.5-flash", description="LLM model")
     LLM_MAX_RETRIES: int = Field(3, description="Max retries for LLM API calls")
-    LLM_MAX_TOKENS: int = Field(2000, description="Max tokens for LLM response")
+    LLM_MAX_TOKENS: int = Field(8192, description="Max tokens for LLM response")
     LLM_TEMPERATURE: float = Field(0.1, description="LLM temperature")
-    LLM_TIMEOUT: int = Field(30, description="LLM timeout")
+    LLM_TIMEOUT: int = Field(60, description="LLM timeout")
 
     # Upstash Redis Configuration
     UPSTASH_REDIS_REST_URL: str = Field(default="", description="Upstash Redis REST URL")
