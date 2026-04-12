@@ -12,11 +12,6 @@ class EmbeddingService:
             "Content-Type": "application/json"
         }
 
-    @retry(
-        wait=wait_fixed(settings.VOYAGE_RATE_LIMIT_DELAY),
-        stop=stop_after_attempt(settings.LLM_MAX_RETRIES),
-        retry=retry_if_exception_type(httpx.HTTPStatusError),
-    )
     async def get_embedding(self, text: str, input_type: str = None) -> List[float]:
         """
         Generates an embedding for a single text string.
@@ -24,24 +19,23 @@ class EmbeddingService:
         embeddings = await self.get_embeddings([text], input_type=input_type)
         return embeddings[0] if embeddings else []
 
-    @retry(
-        wait=wait_fixed(settings.VOYAGE_RATE_LIMIT_DELAY),
-        stop=stop_after_attempt(settings.LLM_MAX_RETRIES),
-        retry=retry_if_exception_type(httpx.HTTPStatusError),
-    )
     async def get_embeddings(self, texts: List[str], input_type: str = None) -> List[List[float]]:
         """
-        Generates embeddings for a list of texts.
+        Generates embeddings for a list of texts (batch mode).
+        No retry - caller handles failures to avoid timeout on Vercel.
         """
+        if not texts:
+            return []
+
         payload = {
             "input": texts,
             "model": settings.VOYAGE_MODEL,
             "input_type": input_type or settings.VOYAGE_INPUT_TYPE,
         }
-        
+
         response = await self.client.post(self.api_url, headers=self.headers, json=payload)
         response.raise_for_status()
-        
+
         result = response.json()
         return [item['embedding'] for item in result['data']]
 
