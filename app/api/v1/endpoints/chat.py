@@ -65,23 +65,25 @@ async def chat(
                     recommendations_context += f"RECOMMENDED APPROACH: {matched_problem_approach}\n\n"
                 recommendations_context += "RECOMMENDED PRODUCTS:\n"
 
+                solution_products = []
                 for i, rec in enumerate(raw_recs):
                     recommendations_context += f"Opsi {i+1}. {rec['product_name']} ({rec['product_category']}) - Rp {rec['product_price']}\n"
                     recommendations_context += f"   {rec['product_description']}\n"
                     all_products_context.append(rec)
-
-                recommendations = [
-                    {
+                    solution_products.append({
                         "product_id": str(rec['product_id']),
                         "product_name": rec['product_name'],
                         "product_category": rec['product_category'],
                         "product_price": float(rec['product_price']),
-                        "image": rec.get('product_image') or "⚡",
-                        "problem_title": rec.get('problem_title', matched_problem_title),
-                        "recommended_approach": rec.get('recommended_approach', matched_problem_approach)
-                    }
-                    for rec in raw_recs
-                ]
+                        "image": rec.get('product_image') or "⚡"
+                    })
+
+                recommendations = [{
+                    "solution_id": str(problems[0]['mcp_id']),
+                    "solution_title": matched_problem_title,
+                    "solution_description": matched_problem_approach or "",
+                    "products": solution_products
+                }]
 
         # Fallback: If no problem matched, try to get products by brand mention or general search
         if not recommendations:
@@ -103,19 +105,24 @@ async def chat(
                             recommendations_context += f"- {prod['product_name']} ({prod['product_category']}) - Rp {prod['product_price']}\n"
                             recommendations_context += f"  {prod['product_description']}\n"
 
-                # Build recommendations from brand products
-                recommendations = [
-                    {
-                        "product_id": str(prod['product_id']),
-                        "product_name": prod['product_name'],
-                        "product_category": prod['product_category'],
-                        "product_price": float(prod['product_price']),
-                        "image": prod.get('product_image') or "⚡",
-                        "problem_title": "",
-                        "recommended_approach": ""
-                    }
-                    for prod in all_products_context
-                ]
+                # Build a single RecommendedSolution with all brand products
+                if all_products_context:
+                    solution_products = [
+                        {
+                            "product_id": str(prod['product_id']),
+                            "product_name": prod['product_name'],
+                            "product_category": prod['product_category'],
+                            "product_price": float(prod['product_price']),
+                            "image": prod.get('product_image') or "⚡"
+                        }
+                        for prod in all_products_context
+                    ]
+                    recommendations = [{
+                        "solution_id": "brand_fallback",
+                        "solution_title": f"Produk {', '.join([b.title() for b in mentioned_brands])}",
+                        "solution_description": "Produk yang tersedia berdasarkan merek yang Anda sebutkan.",
+                        "products": solution_products
+                    }]
             else:
                 # No brand mentioned, get all products as fallback
                 logger.info("No brand mentioned, getting all products as fallback")
@@ -127,18 +134,22 @@ async def chat(
                         recommendations_context += f"- {prod['product_name']} ({prod['product_category']}) - Rp {prod['product_price']}\n"
                         recommendations_context += f"  {prod['product_description']}\n"
 
-                    recommendations = [
+                    solution_products = [
                         {
                             "product_id": str(prod['product_id']),
                             "product_name": prod['product_name'],
                             "product_category": prod['product_category'],
                             "product_price": float(prod['product_price']),
-                            "image": prod.get('product_image') or "⚡",
-                            "problem_title": "",
-                            "recommended_approach": ""
+                            "image": prod.get('product_image') or "⚡"
                         }
                         for prod in all_products
                     ]
+                    recommendations = [{
+                        "solution_id": "general_fallback",
+                        "solution_title": "Produk Audio Tersedia",
+                        "solution_description": "Berikut adalah produk-produk yang tersedia di database kami.",
+                        "products": solution_products
+                    }]
 
         logger.info(f"Recommendations context length: {len(recommendations_context)}")
         logger.info(f"Number of recommendations: {len(recommendations)}")
