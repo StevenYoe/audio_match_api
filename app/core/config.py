@@ -2,6 +2,9 @@ import os
 from pydantic_settings import BaseSettings
 from pydantic import Field
 from typing import List
+import logging
+
+logger = logging.getLogger(__name__)
 
 class Settings(BaseSettings):
     """
@@ -15,17 +18,17 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = Field("INFO", description="Log level")
 
     # Database Configuration
-    DATABASE_URL: str = Field(..., description="PostgreSQL database URL with pgvector")
+    DATABASE_URL: str = Field(default="", description="PostgreSQL database URL with pgvector")
     DATABASE_POOL_SIZE: int = Field(20, description="Database pool size")
     DATABASE_MAX_OVERFLOW: int = Field(40, description="Database max overflow")
     DATABASE_POOL_TIMEOUT: int = Field(30, description="Database pool timeout")
 
     # VoyageAI API Configuration
-    VOYAGE_API_KEY: str = Field(..., description="VoyageAI API Key")
+    VOYAGE_API_KEY: str = Field(default="", description="VoyageAI API Key")
     VOYAGE_MODEL: str = Field("voyage-3.5-lite", description="VoyageAI model")
     VOYAGE_INPUT_TYPE: str = Field("document", description="VoyageAI input type")
     EMBEDDING_DIMENSIONS: int = Field(1024, description="Embedding dimensions")
-    
+
     # CRITICAL: Rate limiting settings for free tier (3 RPM)
     EMBEDDING_BATCH_SIZE: int = Field(100, description="Max texts per API call (VoyageAI limit)")
     VOYAGE_RATE_LIMIT_RPM: int = Field(3, description="Free tier limit")
@@ -33,7 +36,7 @@ class Settings(BaseSettings):
 
 
     # LLM Configuration (Using Gemini API)
-    GEMINI_API_KEY: str = Field(..., description="Gemini API Key")
+    GEMINI_API_KEY: str = Field(default="", description="Gemini API Key")
     LLM_MODEL: str = Field("gemini-1.5-flash", description="LLM model")
     LLM_MAX_RETRIES: int = Field(3, description="Max retries for LLM API calls")
     LLM_MAX_TOKENS: int = Field(2000, description="Max tokens for LLM response")
@@ -41,8 +44,8 @@ class Settings(BaseSettings):
     LLM_TIMEOUT: int = Field(30, description="LLM timeout")
 
     # Upstash Redis Configuration
-    UPSTASH_REDIS_REST_URL: str = Field(..., description="Upstash Redis REST URL")
-    UPSTASH_REDIS_REST_TOKEN: str = Field(..., description="Upstash Redis REST Token")
+    UPSTASH_REDIS_REST_URL: str = Field(default="", description="Upstash Redis REST URL")
+    UPSTASH_REDIS_REST_TOKEN: str = Field(default="", description="Upstash Redis REST Token")
 
     # Redis Cache Configuration (in seconds)
     REDIS_CACHE_TTL: int = Field(3600, description="1 hour - for retrieval results and general cache")
@@ -69,5 +72,26 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         env_file_encoding = 'utf-8'
+
+    def validate_critical_settings(self):
+        """Validate that critical environment variables are set."""
+        missing = []
+        if not self.DATABASE_URL:
+            missing.append("DATABASE_URL")
+        if not self.VOYAGE_API_KEY:
+            missing.append("VOYAGE_API_KEY")
+        if not self.GEMINI_API_KEY:
+            missing.append("GEMINI_API_KEY")
+        if not self.UPSTASH_REDIS_REST_URL:
+            missing.append("UPSTASH_REDIS_REST_URL")
+        if not self.UPSTASH_REDIS_REST_TOKEN:
+            missing.append("UPSTASH_REDIS_REST_TOKEN")
+        
+        if missing:
+            error_msg = f"Missing required environment variables: {', '.join(missing)}"
+            logger.error(error_msg)
+            raise ValueError(error_msg)
+        
+        return True
 
 settings = Settings()
