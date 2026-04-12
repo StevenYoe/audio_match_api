@@ -164,7 +164,7 @@ VALUES
 
 -- NAKAMICHI (tambahan 2)
 ('Speaker Coaxial Nakamichi SP-C162 6.5 inch 2-Way', 'speaker_coaxial', 'Nakamichi', 650000, 'Speaker coaxial 2-way 6.5 inch. Peak 200W, RMS 35W. Budget-friendly. Cone polypropylene. Tweeter PEI dome.', '🔊', '0745ed72-7722-4991-96a2-33948e00631f', TRUE, NULL),
-('Head Unit Android Nakamichi NM-AS10 10 inch 8/128GB', 'head_unit_android', 'Nakamichi', 6500000, 'Head unit Android 10 inch flagship. RAM 8GB + 128GB. QLED display. Wireless CarPlay & Android Auto. DSP 48-band. Support 4G LTE.', '🖥️', '88888888-8888-8888-8888-888888888888', TRUE, NULL),
+('Head Unit Android Nakamichi NM-AS10 10 inch 8/128GB', 'head_unit_android', 'Nakamichi', 6500000, 'Head unit Android 10 inch flagship. RAM 8GB + 128GB. QLED display. Wireless CarPlay & Android Auto. DSP 48-band. Support 4G LTE.', '🖥️', 'c3d4e5f6-a7b8-9012-cdef-123456789012', TRUE, NULL),
 
 -- JBL (tambahan 2)
 ('Speaker Coaxial JBL Club 622 6.5 inch 2-Way', 'speaker_coaxial', 'JBL', 990000, 'Speaker coaxial Club series 6.5 inch. Peak 240W, RMS 60W. PlusOne woofer. Tweeter edge-driven. Sound detail dan punchy.', '🔊', 'd71440dd-5d04-4bf2-a4ca-c630d21063cc', TRUE, NULL),
@@ -195,7 +195,7 @@ VALUES
 ('Subwoofer Passive Hertz Mille Pro MP 250 D4 10 inch', 'subwoofer', 'Hertz', 6500000, 'Subwoofer passive flagship 10 inch. RMS 400W. Dual 4 ohm voice coil. Mille Pro technology. Bass accurate dan powerful.', '🔉', '55a2ab16-143c-466d-903a-08b454634306', TRUE, NULL),
 
 -- VENOM (tambahan 2)
-('Processor Venom Pandora 2.4 DSP', 'processor', 'Venom', 3188000, 'Processor DSP 4 channel. Built-in amplifier 4x50W RMS. 31-band EQ. Time alignment. Crossover. Input RCA + optical.', '🎛️', '44444444-4444-4444-4444-444444444444', TRUE, NULL),
+('Processor Venom Pandora 2.4 DSP', 'processor', 'Venom', 3188000, 'Processor DSP 4 channel. Built-in amplifier 4x50W RMS. 31-band EQ. Time alignment. Crossover. Input RCA + optical.', '🎛️', 'bad8f281-a1ff-4abe-8238-89365e95e58d', TRUE, NULL),
 ('Amplifier 4 Channel Venom VM 50.4 Marine', 'amplifier', 'Venom', 685000, 'Amplifier 4 channel Marine series. 50W RMS x 4 @ 4 ohm. Water resistant. Cocok untuk mobil outdoor atau boat.', '⚡', '8b507336-5b54-4035-be10-a437622a6d7a', TRUE, NULL),
 
 ON CONFLICT DO NOTHING;
