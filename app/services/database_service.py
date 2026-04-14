@@ -206,9 +206,9 @@ class DatabaseService:
         query = """
         SELECT mp_id, mp_name, mp_category, mp_brand, mp_price, 
                mp_description, mp_image, compatibility_score
-        FROM sales.get_products_for_car($1, $2, $3)
+        FROM sales.get_products_for_car(NULL::UUID, $1, $2)
         """
-        return await self.fetch(query, car_type, car_size, car_size)
+        return await self.fetch(query, car_type, car_size)
 
     async def get_car_recommendations_context(
         self, 
