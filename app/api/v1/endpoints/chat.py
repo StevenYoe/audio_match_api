@@ -40,14 +40,39 @@ async def chat(
         current_time_str = datetime.now(wib).strftime("%H:%M")
 
         search_query = request.message
-        embedding = await embedding_service.get_embedding(search_query, input_type="query")
-        problems = await db.search_problem(embedding)
-
         recommendations_context = ""
         recommendations = []
         all_products_context = []
 
-        if problems:
+        # STEP 2A: Check if user mentioned a specific car model
+        car_info = _extract_car_mention(search_query)
+        matched_car = None
+        
+        if car_info:
+            logger.info(f"Car mention detected: brand='{car_info['brand']}', model='{car_info['model']}'")
+            car_results = await db.search_car(car_info['brand'], car_info['model'] or '')
+            
+            if car_results:
+                matched_car = car_results[0]  # Get best match
+                logger.info(f"Car matched: {matched_car['mc_brand']} {matched_car['mc_model']} ({matched_car['mc_type']}, {matched_car['mc_size_category']})")
+                
+                # Get products specifically recommended for this car
+                car_context, car_products = await db.get_car_recommendations_context(matched_car)
+                recommendations_context = car_context
+                
+                if car_products:
+                    recommendations = [{
+                        "solution_id": f"car_{matched_car['mc_id']}",
+                        "solution_title": f"Rekomendasi untuk {matched_car['mc_brand']} {matched_car['mc_model']}",
+                        "solution_description": f"Produk audio yang kompatibel untuk {matched_car['mc_brand']} {matched_car['mc_model']} ({matched_car['mc_type']}, kabin {matched_car['mc_size_category']}).",
+                        "products": car_products
+                    }]
+
+        # STEP 2B: If no car mentioned, try vector search on customer problems
+        if not recommendations:
+            embedding = await embedding_service.get_embedding(search_query, input_type="query")
+            problems = await db.search_problem(embedding)
+
             raw_recs = []
             matched_problem_title = ""
             matched_problem_approach = ""
@@ -207,8 +232,15 @@ CRITICAL RULES:
 - Do NOT make up product names, prices, or specifications.
 
 RULES:
-- Help users find the right products based on their problems, budget, or questions.
+- Help users find the right products based on their problems, budget, car type, or questions.
 - Use only the DATABASE CONTEXT below to answer.
+- If user mentions a SPECIFIC CAR MODEL (e.g., "Xpander", "Brio", "Fortuner"):
+  * ALWAYS prioritize products shown in the "RECOMMENDED FOR" section of the context
+  * Explain WHY each product is suitable for that specific car
+  * Consider cabin size, dashboard type, subwoofer space limitations
+  * For SMALL cars (Brio, Agya, Ayla): RECOMMEND compact solutions (subwoofer kolong, speaker 5.25", slim amplifier)
+  * For LARGE cars (Xpander, Avanza, Fortuner): RECOMMEND full systems (boxed subwoofer, 6x9" rear speakers, powerful amplifier)
+  * Mention any installation notes from the car specifications
 - If user asks for COMPARISON between products/brands:
   * Compare based on price, features, power, quality from the context
   * Be objective: mention pros and cons
@@ -242,11 +274,30 @@ RULES:
 - STRUCTURE your response clearly:
   * Use numbered lists for product recommendations
   * Group products by category when recommending packages
-  * Explain WHY each product is recommended
+  * Explain WHY each product is recommended (especially for specific car models)
 - For brand positioning guidance:
   * Budget: Skeleton, DHD, Avix, Orca
   * Mid-range: Pioneer, Kenwood, JVC, Exxent
   * Premium: Nakamichi, Clarion, Hertz, JL Audio, Rockford Fosgate
+- For CAR-SPECIFIC recommendations:
+  * City Car (Brio, Agya, Ayla): Focus on space-efficient solutions
+    - Subwoofer kolong/underseat (NO boxed subwoofer unless custom install)
+    - Speaker 5.25" or 6.5" (check factory size)
+    - Compact amplifier
+    - Single DIN head unit if dashboard is small
+  * MPV (Xpander, Avanza, Xenia): Full system possible
+    - Head Unit Android 9-10" (double DIN)
+    - Speaker component 6.5" front, coaxial 6x9" rear
+    - Subwoofer 10-12" boxed (trunk space available)
+    - Amplifier 4 channel 75W+
+  * SUV (Fortuner, Pajero, CR-V): Premium setups
+    - High-quality components
+    - DSP processor for tuning
+    - Powerful subwoofer and amplifier
+  * Sedan (Civic, Camry, Corolla): Sound quality focus
+    - Component speakers for staging
+    - Sealed box subwoofer (tight bass)
+    - Low THD amplifier
 
 DATABASE CONTEXT:
 {context_to_inject}
@@ -282,3 +333,126 @@ def _is_valid_uuid(val: str) -> bool:
         return True
     except ValueError:
         return False
+
+
+def _extract_car_mention(text: str) -> dict | None:
+    """Extract car brand and model from user message.
+    
+    Returns dict with 'brand' and 'model' keys, or None if no car detected.
+    """
+    text_lower = text.lower()
+    
+    # Comprehensive car database mapping
+    # Format: 'keyword': (brand, model, type)
+    car_keywords = {
+        # MPV
+        'xpander': ('Mitsubishi', 'Xpander', 'MPV'),
+        'avanza': ('Toyota', 'Avanza', 'MPV'),
+        'xenia': ('Daihatsu', 'Xenia', 'MPV'),
+        'innova': ('Toyota', 'Innova', 'MPV'),
+        'ertiga': ('Suzuki', 'Ertiga', 'MPV'),
+        'mobilio': ('Honda', 'Mobilio', 'MPV'),
+        'confero': ('Wuling', 'Confero', 'MPV'),
+        'livina': ('Nissan', 'Livina', 'MPV'),
+        'stargazer': ('Hyundai', 'Stargazer', 'MPV'),
+        'alphard': ('Toyota', 'Alphard', 'MPV'),
+        'veloz': ('Toyota', 'Veloz', 'MPV'),
+        
+        # City Car
+        'brio': ('Honda', 'Brio', 'City Car'),
+        'agya': ('Toyota', 'Agya', 'City Car'),
+        'ayla': ('Daihatsu', 'Ayla', 'City Car'),
+        's-presso': ('Suzuki', 'S-Presso', 'City Car'),
+        'spresso': ('Suzuki', 'S-Presso', 'City Car'),
+        'calya': ('Toyota', 'Calya', 'City Car'),
+        'sigra': ('Daihatsu', 'Sigra', 'City Car'),
+        'air ev': ('Wuling', 'Air EV', 'City Car'),
+        'i10': ('Hyundai', 'i10', 'City Car'),
+        
+        # SUV
+        'fortuner': ('Toyota', 'Fortuner', 'SUV'),
+        'pajero': ('Mitsubishi', 'Pajero Sport', 'SUV'),
+        'cr-v': ('Honda', 'CR-V', 'SUV'),
+        'crv': ('Honda', 'CR-V', 'SUV'),
+        'cx-5': ('Mazda', 'CX-5', 'SUV'),
+        'cx5': ('Mazda', 'CX-5', 'SUV'),
+        'tucson': ('Hyundai', 'Tucson', 'SUV'),
+        'santa fe': ('Hyundai', 'Santa Fe', 'SUV'),
+        'rush': ('Toyota', 'Rush', 'SUV'),
+        'terios': ('Daihatsu', 'Terios', 'SUV'),
+        'xl7': ('Suzuki', 'XL7', 'SUV'),
+        'almaz': ('Wuling', 'Almaz', 'SUV'),
+        'corolla cross': ('Toyota', 'Corolla Cross', 'SUV'),
+        'xpander cross': ('Mitsubishi', 'Xpander Cross', 'SUV'),
+        
+        # Sedan
+        'civic': ('Honda', 'Civic', 'Sedan'),
+        'accord': ('Honda', 'Accord', 'Sedan'),
+        'camry': ('Toyota', 'Camry', 'Sedan'),
+        'corolla altis': ('Toyota', 'Corolla Altis', 'Sedan'),
+        'corolla': ('Toyota', 'Corolla Altis', 'Sedan'),
+        'mazda 3': ('Mazda', 'Mazda 3', 'Sedan'),
+        'elantra': ('Hyundai', 'Elantra', 'Sedan'),
+        'city': ('Honda', 'City', 'Sedan'),
+        'vios': ('Toyota', 'Vios', 'Sedan'),
+        
+        # Hatchback
+        'jazz': ('Honda', 'Jazz', 'Hatchback'),
+        'baleno': ('Suzuki', 'Baleno', 'Hatchback'),
+        'swift': ('Suzuki', 'Swift', 'Hatchback'),
+        'xforce': ('Mitsubishi', 'Xforce', 'Hatchback'),
+        'yaris': ('Toyota', 'Yaris', 'Hatchback'),
+        'hr-v': ('Honda', 'HR-V', 'Hatchback'),
+        'hrv': ('Honda', 'HR-V', 'Hatchback'),
+        
+        # Pickup/Commercial
+        'l300': ('Mitsubishi', 'L300', 'Pickup'),
+        'carry': ('Suzuki', 'Carry', 'Pickup'),
+        'gran max': ('Daihatsu', 'Gran Max', 'Pickup'),
+        'hilux': ('Toyota', 'Hilux', 'Pickup'),
+        'ranger': ('Ford', 'Ranger', 'Pickup'),
+        'd-max': ('Isuzu', 'D-Max', 'Pickup'),
+        'dmax': ('Isuzu', 'D-Max', 'Pickup'),
+        
+        # Van/Minibus
+        'hiace': ('Toyota', 'HiAce', 'Van'),
+        'luxio': ('Daihatsu', 'Luxio', 'Van'),
+        'apv': ('Suzuki', 'APV', 'Van'),
+    }
+    
+    # Also check for brand-only mentions (will try to infer model)
+    car_brands = {
+        'toyota': 'Toyota',
+        'honda': 'Honda',
+        'mitsubishi': 'Mitsubishi',
+        'daihatsu': 'Daihatsu',
+        'suzuki': 'Suzuki',
+        'hyundai': 'Hyundai',
+        'nissan': 'Nissan',
+        'wuling': 'Wuling',
+        'mazda': 'Mazda',
+        'ford': 'Ford',
+        'isuzu': 'Isuzu',
+    }
+    
+    # First, check for specific car models
+    for keyword, (brand, model, car_type) in car_keywords.items():
+        if keyword in text_lower:
+            return {
+                'brand': brand,
+                'model': model,
+                'type': car_type
+            }
+    
+    # If no specific model found, check for brand mentions with type hints
+    for keyword, brand in car_brands.items():
+        if keyword in text_lower:
+            # Check for type keywords after brand
+            if any(t in text_lower for t in ['mpv', 'suv', 'city car', 'sedan', 'hatchback', 'pickup']):
+                return {
+                    'brand': brand,
+                    'model': '',  # Will match all models of this brand
+                    'type': ''
+                }
+    
+    return None

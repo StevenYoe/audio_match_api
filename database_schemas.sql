@@ -101,8 +101,43 @@ CREATE TABLE sales.trx_chat_messages (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_chat_session 
+CREATE INDEX idx_chat_session
 ON sales.trx_chat_messages(tcm_session_id);
+
+-- ============================================================================
+-- CAR SUPPORT TABLES (Added 2026-04-14)
+-- ============================================================================
+
+CREATE TABLE sales.master_cars (
+    mc_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    mc_brand TEXT NOT NULL,
+    mc_model TEXT NOT NULL,
+    mc_type TEXT, -- e.g., 'MPV', 'SUV', 'City Car', 'Sedan', 'Hatchback', 'Pickup'
+    mc_size_category TEXT NOT NULL, -- 'small', 'medium', 'large'
+    mc_dashboard_type TEXT NOT NULL DEFAULT 'double_din', -- 'single_din', 'double_din', 'android_custom'
+    mc_door_count INTEGER DEFAULT 4,
+    mc_cabin_volume TEXT, -- approximate description
+    mc_subwoofer_space TEXT, -- 'spacious', 'moderate', 'limited', 'underseat_only'
+    mc_factory_speaker_size TEXT, -- e.g., '6.5 inch', '5.25 inch', '6x9 inch'
+    mc_factory_speaker_count INTEGER DEFAULT 2, -- number of factory speakers
+    mc_special_notes TEXT, -- special installation notes
+    mc_is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_cars_brand ON sales.master_cars(mc_brand);
+CREATE INDEX idx_cars_model ON sales.master_cars(mc_model);
+CREATE INDEX idx_cars_type ON sales.master_cars(mc_type);
+CREATE INDEX idx_cars_active ON sales.master_cars(mc_is_active);
+CREATE INDEX idx_cars_brand_model ON sales.master_cars(mc_brand, mc_model);
+
+-- Car compatibility columns for master_products
+ALTER TABLE sales.master_products 
+ADD COLUMN IF NOT EXISTS mp_compatible_car_types TEXT[] DEFAULT NULL;
+
+ALTER TABLE sales.master_products 
+ADD COLUMN IF NOT EXISTS mp_recommended_car_sizes TEXT[] DEFAULT NULL;
 
 CREATE OR REPLACE FUNCTION sales.search_problem(
     query_embedding VECTOR(1024),
@@ -185,5 +220,124 @@ BEGIN
       AND 1 - (k.mkc_embedding <=> query_embedding) > match_threshold
     ORDER BY k.mkc_embedding <=> query_embedding
     LIMIT match_count;
+END;
+$$ LANGUAGE plpgsql;
+
+-- ============================================================================
+-- CAR-RELATED FUNCTIONS (Added 2026-04-14)
+-- ============================================================================
+
+CREATE OR REPLACE FUNCTION sales.search_car(
+    search_brand TEXT,
+    search_model TEXT
+)
+RETURNS TABLE (
+    mc_id UUID,
+    mc_brand TEXT,
+    mc_model TEXT,
+    mc_type TEXT,
+    mc_size_category TEXT,
+    mc_dashboard_type TEXT,
+    mc_door_count INTEGER,
+    mc_cabin_volume TEXT,
+    mc_subwoofer_space TEXT,
+    mc_factory_speaker_size TEXT,
+    mc_factory_speaker_count INTEGER,
+    mc_special_notes TEXT,
+    similarity FLOAT
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        c.mc_id,
+        c.mc_brand,
+        c.mc_model,
+        c.mc_type,
+        c.mc_size_category,
+        c.mc_dashboard_type,
+        c.mc_door_count,
+        c.mc_cabin_volume,
+        c.mc_subwoofer_space,
+        c.mc_factory_speaker_size,
+        c.mc_factory_speaker_count,
+        c.mc_special_notes,
+        CASE 
+            WHEN LOWER(c.mc_brand) = LOWER(search_brand) AND LOWER(c.mc_model) = LOWER(search_model) THEN 1.0
+            WHEN LOWER(c.mc_brand) = LOWER(search_brand) THEN 0.8
+            WHEN LOWER(c.mc_model) = LOWER(search_model) THEN 0.7
+            WHEN LOWER(c.mc_type) = LOWER(search_brand) THEN 0.6
+            ELSE 0.5
+        END AS similarity
+    FROM sales.master_cars c
+    WHERE c.mc_is_active = TRUE
+      AND (
+          LOWER(c.mc_brand) = LOWER(search_brand)
+          OR LOWER(c.mc_model) = LOWER(search_model)
+          OR LOWER(c.mc_type) = LOWER(search_brand)
+          OR LOWER(c.mc_brand || ' ' || c.mc_model) LIKE '%' || LOWER(search_brand) || '%'
+          OR LOWER(c.mc_model) LIKE '%' || LOWER(search_model) || '%'
+      )
+    ORDER BY similarity DESC
+    LIMIT 5;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION sales.get_products_for_car(
+    car_id UUID DEFAULT NULL,
+    car_type TEXT DEFAULT NULL,
+    car_size TEXT DEFAULT NULL
+)
+RETURNS TABLE (
+    mp_id UUID,
+    mp_name TEXT,
+    mp_category TEXT,
+    mp_brand TEXT,
+    mp_price NUMERIC(12,2),
+    mp_description TEXT,
+    mp_image TEXT,
+    compatibility_score INTEGER
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        p.mp_id,
+        p.mp_name,
+        p.mp_category,
+        p.mp_brand,
+        p.mp_price,
+        p.mp_description,
+        p.mp_image,
+        CASE
+            -- Perfect match: product explicitly compatible with this car's type and size
+            WHEN p.mp_compatible_car_types IS NOT NULL 
+                 AND p.mp_recommended_car_sizes IS NOT NULL
+                 AND (car_type = ANY(p.mp_compatible_car_types) OR car_type IS NULL)
+                 AND (car_size = ANY(p.mp_recommended_car_sizes) OR car_size IS NULL)
+            THEN 100
+            
+            -- Good match: compatible with car type
+            WHEN p.mp_compatible_car_types IS NOT NULL 
+                 AND (car_type = ANY(p.mp_compatible_car_types) OR car_type IS NULL)
+            THEN 80
+            
+            -- Decent match: compatible with car size
+            WHEN p.mp_recommended_car_sizes IS NOT NULL 
+                 AND (car_size = ANY(p.mp_recommended_car_sizes) OR car_size IS NULL)
+            THEN 70
+            
+            -- Universal product (no restrictions)
+            WHEN p.mp_compatible_car_types IS NULL 
+                 AND p.mp_recommended_car_sizes IS NULL
+            THEN 60
+            
+            -- Not ideal but still available
+            ELSE 50
+        END AS compatibility_score
+    FROM sales.master_products p
+    WHERE p.mp_is_active = TRUE
+    ORDER BY 
+        compatibility_score DESC,
+        p.mp_category,
+        p.mp_price DESC;
 END;
 $$ LANGUAGE plpgsql;

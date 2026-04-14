@@ -185,6 +185,87 @@ class DatabaseService:
         query = "UPDATE sales.master_products SET mp_embedding = $1 WHERE mp_id = $2"
         await self.execute(query, str(embedding), product_id)
 
+    # --- CAR-RELATED METHODS ---
+    async def search_car(self, brand: str, model: str) -> List[Dict[str, Any]]:
+        """Search for a car by brand and model name."""
+        query = """
+        SELECT mc_id, mc_brand, mc_model, mc_type, mc_size_category, 
+               mc_dashboard_type, mc_door_count, mc_cabin_volume,
+               mc_subwoofer_space, mc_factory_speaker_size, 
+               mc_factory_speaker_count, mc_special_notes, similarity
+        FROM sales.search_car($1, $2)
+        """
+        return await self.fetch(query, brand, model)
+
+    async def get_products_for_car(
+        self, 
+        car_type: str = None, 
+        car_size: str = None
+    ) -> List[Dict[str, Any]]:
+        """Get products compatible with a specific car type and/or size."""
+        query = """
+        SELECT mp_id, mp_name, mp_category, mp_brand, mp_price, 
+               mp_description, mp_image, compatibility_score
+        FROM sales.get_products_for_car($1, $2, $3)
+        """
+        return await self.fetch(query, car_type, car_size, car_size)
+
+    async def get_car_recommendations_context(
+        self, 
+        car: Dict[str, Any]
+    ) -> str:
+        """Build a formatted context string with products recommended for a specific car."""
+        car_type = car.get('mc_type')
+        car_size = car.get('mc_size_category')
+        car_name = f"{car.get('mc_brand')} {car.get('mc_model')}"
+        
+        products = await self.get_products_for_car(car_type, car_size)
+        
+        if not products:
+            # Fallback to all active products if no compatible products found
+            products = await self.get_all_active_products()
+        
+        # Group products by category
+        products_by_category = {}
+        for prod in products:
+            cat = prod['product_category']
+            if cat not in products_by_category:
+                products_by_category[cat] = []
+            products_by_category[cat].append(prod)
+        
+        # Build context string
+        context = f"\nRECOMMENDED FOR: {car_name.upper()} ({car_type}, {car_size} cabin)\n"
+        context += f"Dashboard: {car.get('mc_dashboard_type', 'double_din').replace('_', ' ').title()}\n"
+        context += f"Cabin Volume: {car.get('mc_cabin_volume', 'N/A')}\n"
+        context += f"Subwoofer Space: {car.get('mc_subwoofer_space', 'N/A')}\n"
+        context += f"Factory Speaker: {car.get('mc_factory_speaker_size', 'N/A')} ({car.get('mc_factory_speaker_count', 0)} speakers)\n"
+        
+        if car.get('mc_special_notes'):
+            context += f"Notes: {car['mc_special_notes']}\n"
+        
+        context += "\nCOMPATIBLE PRODUCTS (organized by category, best match first):\n"
+        
+        solution_products = []
+        option_counter = 1
+        
+        for category in sorted(products_by_category.keys()):
+            category_products = products_by_category[category]
+            context += f"\n[{category.upper().replace('_', ' ')}]\n"
+            for prod in category_products:
+                context += f"Opsi {option_counter}. {prod['product_name']} - Rp {prod['product_price']}\n"
+                context += f"   {prod['product_description']}\n"
+                prod['option_number'] = option_counter
+                option_counter += 1
+                solution_products.append({
+                    "product_id": str(prod['mp_id']),
+                    "product_name": prod['product_name'],
+                    "product_category": prod['product_category'],
+                    "product_price": float(prod['product_price']),
+                    "image": prod.get('mp_image') or "⚡"
+                })
+        
+        return context, solution_products
+
 async def get_db_pool():
     # Menggunakan ssl=True adalah cara paling standar bagi asyncpg untuk koneksi ke Neon
     # Sertakan juga timeout yang lebih tinggi untuk proses autentikasi
