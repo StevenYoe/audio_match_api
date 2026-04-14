@@ -228,39 +228,39 @@ class DatabaseService:
         # Group products by category
         products_by_category = {}
         for prod in products:
-            cat = prod['product_category']
+            cat = prod['mp_category']
             if cat not in products_by_category:
                 products_by_category[cat] = []
             products_by_category[cat].append(prod)
-        
+
         # Build context string
         context = f"\nRECOMMENDED FOR: {car_name.upper()} ({car_type}, {car_size} cabin)\n"
         context += f"Dashboard: {car.get('mc_dashboard_type', 'double_din').replace('_', ' ').title()}\n"
         context += f"Cabin Volume: {car.get('mc_cabin_volume', 'N/A')}\n"
         context += f"Subwoofer Space: {car.get('mc_subwoofer_space', 'N/A')}\n"
         context += f"Factory Speaker: {car.get('mc_factory_speaker_size', 'N/A')} ({car.get('mc_factory_speaker_count', 0)} speakers)\n"
-        
+
         if car.get('mc_special_notes'):
             context += f"Notes: {car['mc_special_notes']}\n"
-        
+
         context += "\nCOMPATIBLE PRODUCTS (organized by category, best match first):\n"
-        
+
         solution_products = []
         option_counter = 1
-        
+
         for category in sorted(products_by_category.keys()):
             category_products = products_by_category[category]
             context += f"\n[{category.upper().replace('_', ' ')}]\n"
             for prod in category_products:
-                context += f"Opsi {option_counter}. {prod['product_name']} - Rp {prod['product_price']}\n"
-                context += f"   {prod['product_description']}\n"
+                context += f"Opsi {option_counter}. {prod['mp_name']} - Rp {prod['mp_price']}\n"
+                context += f"   {prod['mp_description']}\n"
                 prod['option_number'] = option_counter
                 option_counter += 1
                 solution_products.append({
                     "product_id": str(prod['mp_id']),
-                    "product_name": prod['product_name'],
-                    "product_category": prod['product_category'],
-                    "product_price": float(prod['product_price']),
+                    "product_name": prod['mp_name'],
+                    "product_category": prod['mp_category'],
+                    "product_price": float(prod['mp_price']),
                     "image": prod.get('mp_image') or "⚡"
                 })
         
