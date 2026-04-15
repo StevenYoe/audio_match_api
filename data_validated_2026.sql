@@ -107,7 +107,7 @@ VALUES
 -- HERTZ (5 products)
 ('Speaker Coaxial Hertz X 165 6.5 inch', 'speaker_coaxial', 'Hertz', 1400000, 'Speaker coaxial 2-way 6.5 inch. Peak 300W, RMS 75W. Cone treated cellulose pulp. Tweeter PEI dome 23mm. Italian sound quality.', '🔊', 'd71440dd-5d04-4bf2-a4ca-c630d21063cc', TRUE, NULL),
 ('Speaker Component Hertz K 165 UNO 6.5 inch 2-Way', 'speaker_component', 'Hertz', 1620000, 'Speaker component UNO series 6.5 inch. Peak 300W, RMS 75W. Tweeter dome 23mm neodymium. Crossover external 12dB/oct. Natural sound.', '🎵', 'c3d4e5f6-a7b8-9012-cdef-123456789012', TRUE, NULL),
-('Tweeter Hertz Mille Pro MPX 170.30', 'tweeter', 'Hertz', 2200000, 'Tweeter premium 1 inch dari Mille Pro series. Neodymium magnet. Tetolon dome. Response 2kHz-24kHz. Untuk soundstage lebar dan detail.', '🎶', 'bad8f281-a1ff-4abe-8238-89365e95e58d', TRUE, NULL),
+('Tweeter Hertz Mille Pro MPX 170.30', 'tweeter', 'Hertz', 2200000, 'Tweeter premium 1 inch dari Mille Pro series. Neodymium magnet. Tetolon dome. Response 2kHz-24kHz. Untuk vocal jelas dan soundstage lebar.', '🎶', 'd71440dd-5d04-4bf2-a4ca-c630d21063cc', TRUE, NULL),
 ('Amplifier 4 Channel Hertz DP 4.300', 'amplifier', 'Hertz', 4537000, 'Amplifier 4 channel Dieci series. 75W RMS x 4 @ 4 ohm. Class AB. Built-in DSP. Compactly designed. Italian engineering.', '⚡', '4fe8ab59-0f18-411b-8d75-9c5c746e57fd', TRUE, NULL),
 ('Amplifier Mono Hertz DP 1.500', 'amplifier_mono', 'Hertz', 5225000, 'Amplifier monoblok Class D untuk subwoofer. 500W RMS @ 2 ohm. LPF variable 50-400Hz. Bass boost 0-12dB. Premium Italian quality.', '⚡', '1c534f23-d636-41ca-9719-ee9493bf70ad', TRUE, NULL),
 

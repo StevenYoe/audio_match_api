@@ -34,6 +34,8 @@ MIGRATIONS = [
     "migrations/001_add_car_support.sql",
     "migrations/002_populate_car_data.sql",
     "migrations/003_update_product_compatibility.sql",
+    "migrations/004_hybrid_search.sql",
+    "migrations/005_fix_tweeter_problem_linkage.sql",
 ]
 
 

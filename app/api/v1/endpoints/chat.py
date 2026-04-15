@@ -47,19 +47,19 @@ async def chat(
         # STEP 2A: Check if user mentioned a specific car model
         car_info = _extract_car_mention(search_query)
         matched_car = None
-        
+
         if car_info:
             logger.info(f"Car mention detected: brand='{car_info['brand']}', model='{car_info['model']}'")
             car_results = await db.search_car(car_info['brand'], car_info['model'] or '')
-            
+
             if car_results:
                 matched_car = car_results[0]  # Get best match
                 logger.info(f"Car matched: {matched_car['mc_brand']} {matched_car['mc_model']} ({matched_car['mc_type']}, {matched_car['mc_size_category']})")
-                
+
                 # Get products specifically recommended for this car
                 car_context, car_products = await db.get_car_recommendations_context(matched_car)
                 recommendations_context = car_context
-                
+
                 if car_products:
                     recommendations = [{
                         "solution_id": f"car_{matched_car['mc_id']}",
@@ -67,6 +67,57 @@ async def chat(
                         "solution_description": f"Produk audio yang kompatibel untuk {matched_car['mc_brand']} {matched_car['mc_model']} ({matched_car['mc_type']}, kabin {matched_car['mc_size_category']}).",
                         "products": car_products
                     }]
+
+        # STEP 2A2: Check for BRAND mention (BEFORE problem search)
+        # Brand queries should go directly to brand fallback, not problem matching
+        if not recommendations:
+            query_lower = search_query.lower()
+            known_brands = ['kenwood', 'pioneer', 'jvc', 'nakamichi', 'clarion', 'hertz', 
+                           'jl audio', 'rockford fosgate', 'skeleton', 'dhd', 'avix', 'orca', 'exxent']
+            mentioned_brands = [brand for brand in known_brands if brand in query_lower]
+
+            if mentioned_brands:
+                logger.info(f"Brand detected in query: {mentioned_brands} - using direct brand search")
+                # Get ALL products for mentioned brands using direct brand lookup (not hybrid search)
+                for brand in mentioned_brands:
+                    brand_products = await db.get_products_by_brand(brand)
+                    if brand_products:
+                        all_products_context.extend(brand_products)
+                        recommendations_context += f"\n\nSEMUA PRODUK {brand.upper()} DI DATABASE (diorganisir berdasarkan kategori):\n"
+
+                        # Group by category for better organization
+                        brand_by_category = {}
+                        for prod in brand_products:
+                            cat = prod['mp_category']
+                            if cat not in brand_by_category:
+                                brand_by_category[cat] = []
+                            brand_by_category[cat].append(prod)
+
+                        for category in sorted(brand_by_category.keys()):
+                            category_products = brand_by_category[category]
+                            recommendations_context += f"\n[{category.upper().replace('_', ' ')}]\n"
+                            for prod in category_products:
+                                recommendations_context += f"- {prod['mp_name']} - Rp {prod['mp_price']}\n"
+                                recommendations_context += f"  {prod['mp_description']}\n"
+
+                        # Build recommendation with ALL brand products
+                        solution_products = [
+                            {
+                                "product_id": str(prod['product_id']),
+                                "product_name": prod['product_name'],
+                                "product_category": prod['product_category'],
+                                "product_price": float(prod['product_price']),
+                                "image": prod.get('product_image') or "⚡"
+                            }
+                            for prod in brand_products
+                        ]
+                        recommendations = [{
+                            "solution_id": f"brand_{mentioned_brands[0]}",
+                            "solution_title": f"Semua Produk {', '.join([b.title() for b in mentioned_brands])}",
+                            "solution_description": f"Berikut adalah semua produk {', '.join([b.title() for b in mentioned_brands])} yang tersedia di database kami, diorganisir berdasarkan kategori.",
+                            "products": solution_products
+                        }]
+                        break  # Only process first brand mentioned
 
         # STEP 2B: If no car mentioned, try HYBRID search (vector + BM25 FTS) on customer problems
         if not recommendations:
@@ -139,20 +190,13 @@ async def chat(
             mentioned_brands = [brand for brand in known_brands if brand in query_lower]
 
             if mentioned_brands:
-                logger.info(f"Found brand mentions: {mentioned_brands}")
-                # Get products for mentioned brands using hybrid search
+                logger.info(f"Found brand mentions: {mentioned_brands} - using direct brand search")
+                # Get ALL products for mentioned brands using direct brand lookup
                 for brand in mentioned_brands:
-                    # Get embedding for brand-specific search
-                    embedding = await embedding_service.get_embedding(search_query, input_type="query")
-                    brand_products = await db.search_product_hybrid(
-                        query_text=search_query,
-                        embedding=embedding,
-                        match_count=20,
-                        brand_filter=brand
-                    )
+                    brand_products = await db.get_products_by_brand(brand)
                     if brand_products:
                         all_products_context.extend(brand_products)
-                        recommendations_context += f"\n\n{brand.upper()} PRODUCTS IN DATABASE (ranked by hybrid score):\n"
+                        recommendations_context += f"\n\nSEMUA PRODUK {brand.upper()} DI DATABASE (diorganisir berdasarkan kategori):\n"
 
                         # Group by category for better organization
                         brand_by_category = {}
@@ -166,7 +210,7 @@ async def chat(
                             category_products = brand_by_category[category]
                             recommendations_context += f"\n[{category.upper().replace('_', ' ')}]\n"
                             for prod in category_products:
-                                recommendations_context += f"- {prod['mp_name']} - Rp {prod['mp_price']} (hybrid: {prod.get('hybrid_score', 0):.3f})\n"
+                                recommendations_context += f"- {prod['mp_name']} - Rp {prod['mp_price']}\n"
                                 recommendations_context += f"  {prod['mp_description']}\n"
 
                 # Build a single RecommendedSolution with all brand products
@@ -252,6 +296,43 @@ CRITICAL RULES:
 RULES:
 - Help users find the right products based on their problems, budget, car type, or questions.
 - Use only the DATABASE CONTEXT below to answer.
+
+PRODUCT CATEGORY GUIDE (CRITICAL FOR CORRECT RECOMMENDATIONS):
+- **TWEETER**: Specialist untuk vocal, detail suara, treble, dan frekuensi tinggi (2kHz-24kHz).
+  ALWAYS recommend tweeter PERTAMA untuk masalah: "vocal tidak jelas", "vocal kurang jelas",
+  "mid range kurang jelas", "suara datar", "soundstage sempit", "detail kurang", "treble kurang",
+  "penyanyi tidak terdengar jelas". Tweeter adalah solusi UTAMA untuk masalah vocal.
+- **SPEAKER COMPONENT 2-WAY**: Solusi upgrade speaker dengan tweeter terpisah dan crossover.
+  Bagus untuk vocal DAN soundstage. Recommend SETELAH atau BERSAMA tweeter untuk vocal problems.
+- **SPEAKER COAXIAL**: Upgrade plug-and-play dari speaker bawaan. All-in-one speaker.
+  Good for general upgrade, tapi bukan specialist untuk vocal.
+- **SUBWOOFER**: Specialist untuk bass, low frequency (20Hz-200Hz). Untuk EDM, hip-hop, reggae.
+- **AMPLIFIER**: Power booster untuk semua speaker/subwoofer/tweeter. Recommended sebagai pendamping.
+- **HEAD UNIT**: Source unit dengan fitur (Bluetooth, DSP, CarPlay, Android Auto).
+
+PRIORITAS REKOMENDASI BY PROBLEM:
+- **Vocal/Mid range kurang jelas**: 
+  1️⃣ TWEETER (prioritas utama - specialist vocal)
+  2️⃣ Speaker Component 2-way (dengan tweeter terpisah)
+  3️⃣ Amplifier (untuk power tweeter/speaker)
+- **Bass kurang bertenaga**: 
+  1️⃣ Subwoofer
+  2️⃣ Amplifier mono
+  3️⃣ Speaker dengan bass response bagus
+- **Soundstage/Staging sempit**: 
+  1️⃣ Tweeter (untuk detail dan staging)
+  2️⃣ Speaker Component 2-way/3-way
+  3️⃣ Head Unit dengan DSP (untuk tuning)
+- **Distorsi/Suara pecah**: 
+  1️⃣ Speaker Component
+  2️⃣ Amplifier (agar speaker tidak overwork)
+  3️⃣ Head Unit dengan output bersih
+- **Bluetooth/Connectivity masalah**: 
+  1️⃣ Head Unit dengan Bluetooth 5.0+
+- **Speaker bawaan jelek**: 
+  1️⃣ Speaker Coaxial (plug-and-play)
+  2️⃣ Speaker Component (upgrade lebih baik)
+  3️⃣ Tweeter external (tambah detail)
 - If user mentions a SPECIFIC CAR MODEL (e.g., "Xpander", "Brio", "Fortuner"):
   * ALWAYS prioritize products shown in the "RECOMMENDED FOR" section of the context
   * Explain WHY each product is suitable for that specific car
