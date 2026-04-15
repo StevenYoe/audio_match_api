@@ -87,13 +87,13 @@ BEGIN
     RETURN QUERY
     WITH vector_results AS (
         -- Dense retrieval: Vector similarity search
-        SELECT 
+        SELECT
             p.mcp_id,
             p.mcp_problem_title,
             p.mcp_description,
             p.mcp_recommended_approach,
             1 - (p.mcp_embedding <=> query_embedding) AS similarity,
-            ROW_NUMBER() OVER (ORDER BY 1 - (p.mcp_embedding <=> query_embedding) DESC) AS rank
+            ROW_NUMBER() OVER (ORDER BY 1 - (p.mcp_embedding <=> query_embedding) DESC)::integer AS rank
         FROM sales.master_customer_problems p
         WHERE p.mcp_is_active = TRUE
           AND p.mcp_embedding IS NOT NULL
@@ -104,7 +104,7 @@ BEGIN
     ),
     bm25_results AS (
         -- Sparse retrieval: BM25-style full-text search
-        SELECT 
+        SELECT
             p.mcp_id,
             p.mcp_problem_title,
             p.mcp_description,
@@ -120,7 +120,7 @@ BEGIN
                     plainto_tsquery('indonesian', query_text),
                     32
                 ) DESC
-            ) AS rank
+            )::integer AS rank
         FROM sales.master_customer_problems p
         WHERE p.mcp_is_active = TRUE
           AND to_tsvector('indonesian', COALESCE(p.mcp_problem_title, '') || ' ' || COALESCE(p.mcp_description, '')) 
@@ -128,13 +128,13 @@ BEGIN
     ),
     all_candidates AS (
         -- Union all candidates from both methods
-        SELECT mcp_id FROM vector_results
+        SELECT v.mcp_id FROM vector_results v
         UNION
-        SELECT mcp_id FROM bm25_results
+        SELECT b.mcp_id FROM bm25_results b
     ),
     rrf_scores AS (
         -- Calculate RRF scores for each candidate
-        SELECT 
+        SELECT
             c.mcp_id,
             COALESCE((1.0 / (rrf_k + v.rank)), 0.0) AS vector_rrf,
             COALESCE((1.0 / (rrf_k + b.rank)), 0.0) AS bm25_rrf,
@@ -149,7 +149,7 @@ BEGIN
         LEFT JOIN vector_results v ON c.mcp_id = v.mcp_id
         LEFT JOIN bm25_results b ON c.mcp_id = b.mcp_id
     )
-    SELECT 
+    SELECT
         r.mcp_id,
         r.mcp_problem_title,
         r.mcp_description,
@@ -202,7 +202,7 @@ BEGIN
     RETURN QUERY
     WITH vector_results AS (
         -- Dense retrieval: Vector similarity search on product embeddings
-        SELECT 
+        SELECT
             p.mp_id,
             p.mp_name,
             p.mp_category,
@@ -212,7 +212,7 @@ BEGIN
             p.mp_image,
             p.mp_solves_problem_id,
             1 - (p.mp_embedding <=> query_embedding) AS similarity,
-            ROW_NUMBER() OVER (ORDER BY 1 - (p.mp_embedding <=> query_embedding) DESC) AS rank
+            ROW_NUMBER() OVER (ORDER BY 1 - (p.mp_embedding <=> query_embedding) DESC)::integer AS rank
         FROM sales.master_products p
         WHERE p.mp_is_active = TRUE
           AND p.mp_embedding IS NOT NULL
@@ -225,7 +225,7 @@ BEGIN
     ),
     bm25_results AS (
         -- Sparse retrieval: BM25-style full-text search on product name, description, brand, category
-        SELECT 
+        SELECT
             p.mp_id,
             p.mp_name,
             p.mp_category,
@@ -235,10 +235,10 @@ BEGIN
             p.mp_image,
             p.mp_solves_problem_id,
             ts_rank_cd(
-                to_tsvector('indonesian', 
-                    COALESCE(p.mp_name, '') || ' ' || 
-                    COALESCE(p.mp_description, '') || ' ' || 
-                    COALESCE(p.mp_brand, '') || ' ' || 
+                to_tsvector('indonesian',
+                    COALESCE(p.mp_name, '') || ' ' ||
+                    COALESCE(p.mp_description, '') || ' ' ||
+                    COALESCE(p.mp_brand, '') || ' ' ||
                     COALESCE(p.mp_category, '')
                 ),
                 plainto_tsquery('indonesian', query_text),
@@ -246,16 +246,16 @@ BEGIN
             )::DOUBLE PRECISION AS similarity,
             ROW_NUMBER() OVER (
                 ORDER BY ts_rank_cd(
-                    to_tsvector('indonesian', 
-                        COALESCE(p.mp_name, '') || ' ' || 
-                        COALESCE(p.mp_description, '') || ' ' || 
-                        COALESCE(p.mp_brand, '') || ' ' || 
+                    to_tsvector('indonesian',
+                        COALESCE(p.mp_name, '') || ' ' ||
+                        COALESCE(p.mp_description, '') || ' ' ||
+                        COALESCE(p.mp_brand, '') || ' ' ||
                         COALESCE(p.mp_category, '')
                     ),
                     plainto_tsquery('indonesian', query_text),
                     32
                 ) DESC
-            ) AS rank
+            )::integer AS rank
         FROM sales.master_products p
         WHERE p.mp_is_active = TRUE
           AND to_tsvector('indonesian', 
@@ -269,9 +269,9 @@ BEGIN
     ),
     all_candidates AS (
         -- Union all candidates from both methods
-        SELECT mp_id FROM vector_results
+        SELECT v.mp_id FROM vector_results v
         UNION
-        SELECT mp_id FROM bm25_results
+        SELECT b.mp_id FROM bm25_results b
     ),
     rrf_scores AS (
         -- Calculate RRF scores for each candidate
