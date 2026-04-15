@@ -88,7 +88,7 @@ async def chat(
                         # Group by category for better organization
                         brand_by_category = {}
                         for prod in brand_products:
-                            cat = prod['mp_category']
+                            cat = prod['product_category']
                             if cat not in brand_by_category:
                                 brand_by_category[cat] = []
                             brand_by_category[cat].append(prod)
@@ -97,8 +97,8 @@ async def chat(
                             category_products = brand_by_category[category]
                             recommendations_context += f"\n[{category.upper().replace('_', ' ')}]\n"
                             for prod in category_products:
-                                recommendations_context += f"- {prod['mp_name']} - Rp {prod['mp_price']}\n"
-                                recommendations_context += f"  {prod['mp_description']}\n"
+                                recommendations_context += f"- {prod['product_name']} - Rp {prod['product_price']}\n"
+                                recommendations_context += f"  {prod['product_description']}\n"
 
                         # Build recommendation with ALL brand products
                         solution_products = [
@@ -201,7 +201,7 @@ async def chat(
                         # Group by category for better organization
                         brand_by_category = {}
                         for prod in brand_products:
-                            cat = prod['mp_category']
+                            cat = prod['product_category']
                             if cat not in brand_by_category:
                                 brand_by_category[cat] = []
                             brand_by_category[cat].append(prod)
@@ -210,8 +210,8 @@ async def chat(
                             category_products = brand_by_category[category]
                             recommendations_context += f"\n[{category.upper().replace('_', ' ')}]\n"
                             for prod in category_products:
-                                recommendations_context += f"- {prod['mp_name']} - Rp {prod['mp_price']}\n"
-                                recommendations_context += f"  {prod['mp_description']}\n"
+                                recommendations_context += f"- {prod['product_name']} - Rp {prod['product_price']}\n"
+                                recommendations_context += f"  {prod['product_description']}\n"
 
                 # Build a single RecommendedSolution with all brand products
                 if all_products_context:
