@@ -10,22 +10,50 @@
 
 -- Step 1: Add GIN indexes for full-text search on problems
 -- These indexes enable fast lexical/BM25 search using PostgreSQL tsvector
-CREATE INDEX IF NOT EXISTS idx_problems_fts_title_desc 
-ON sales.master_customer_problems 
-USING gin (to_tsvector('indonesian', COALESCE(mcp_problem_title, '') || ' ' || COALESCE(mcp_description, '')));
+-- Note: Using generated columns to avoid IMMUTABLE function issues
 
-CREATE INDEX IF NOT EXISTS idx_problems_fts_keywords 
-ON sales.master_customer_problems 
-USING gin (to_tsvector('indonesian', array_to_string(COALESCE(mcp_keywords, ARRAY[]::text[]), ' ')));
+-- Add generated tsvector column for problems (if it doesn't exist)
+DO $$ BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_schema = 'sales' AND table_name = 'master_customer_problems' 
+        AND column_name = 'mcp_search_vector'
+    ) THEN
+        ALTER TABLE sales.master_customer_problems ADD COLUMN mcp_search_vector tsvector
+            GENERATED ALWAYS AS (
+                to_tsvector('indonesian'::regconfig, 
+                    COALESCE(mcp_problem_title, '') || ' ' || COALESCE(mcp_description, '')
+                )
+            ) STORED;
+    END IF;
+END $$;
 
--- Step 2: Add GIN indexes for full-text search on products
-CREATE INDEX IF NOT EXISTS idx_products_fts_name_desc 
-ON sales.master_products 
-USING gin (to_tsvector('indonesian', COALESCE(mp_name, '') || ' ' || COALESCE(mp_description, '')));
+-- Create GIN index on generated column
+CREATE INDEX IF NOT EXISTS idx_problems_fts_title_desc
+ON sales.master_customer_problems
+USING gin (mcp_search_vector);
 
-CREATE INDEX IF NOT EXISTS idx_products_fts_brand_category 
-ON sales.master_products 
-USING gin (to_tsvector('indonesian', COALESCE(mp_brand, '') || ' ' || COALESCE(mp_category, '')));
+-- Step 2: Add generated tsvector column for products (if it doesn't exist)
+DO $$ BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_schema = 'sales' AND table_name = 'master_products' 
+        AND column_name = 'mp_search_vector'
+    ) THEN
+        ALTER TABLE sales.master_products ADD COLUMN mp_search_vector tsvector
+            GENERATED ALWAYS AS (
+                to_tsvector('indonesian'::regconfig, 
+                    COALESCE(mp_name, '') || ' ' || COALESCE(mp_description, '') || ' ' ||
+                    COALESCE(mp_brand, '') || ' ' || COALESCE(mp_category, '')
+                )
+            ) STORED;
+    END IF;
+END $$;
+
+-- Create GIN index on generated column
+CREATE INDEX IF NOT EXISTS idx_products_fts_name_desc
+ON sales.master_products
+USING gin (mp_search_vector);
 
 -- Step 3: Create hybrid search function for problems
 -- Combines vector similarity + BM25 full-text search with RRF fusion
