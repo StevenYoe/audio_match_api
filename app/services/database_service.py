@@ -21,12 +21,79 @@ class DatabaseService:
             return await connection.execute(query, *args)
 
     async def search_problem(self, embedding: List[float]) -> List[Dict[str, Any]]:
-        """Vector similarity search on master_customer_problems."""
+        """Vector similarity search on master_customer_problems.
+        
+        DEPRECATED: Use search_problem_hybrid instead for better accuracy.
+        Kept for backward compatibility.
+        """
         query = """
         SELECT mcp_id, mcp_problem_title, mcp_description, mcp_recommended_approach, similarity
         FROM sales.search_problem($1, $2, $3)
         """
         return await self.fetch(query, str(embedding), 0.4, 3)
+
+    async def search_problem_hybrid(
+        self, 
+        query_text: str, 
+        embedding: List[float],
+        match_count: int = 5
+    ) -> List[Dict[str, Any]]:
+        """Hybrid search combining vector similarity + BM25 full-text search.
+        
+        Uses Reciprocal Rank Fusion (RRF) to combine:
+        - Dense retrieval: Vector cosine similarity
+        - Sparse retrieval: PostgreSQL BM25-style FTS (ts_rank_cd)
+        
+        Returns results ranked by hybrid score (weighted combination).
+        """
+        query = """
+        SELECT mcp_id, mcp_problem_title, mcp_description, mcp_recommended_approach, 
+               vector_score, bm25_score, hybrid_score, vector_rank, bm25_rank
+        FROM sales.search_problem_hybrid($1, $2, $3, $4, $5, $6)
+        """
+        return await self.fetch(
+            query, 
+            query_text, 
+            str(embedding), 
+            match_count,
+            60,    # rrf_k (standard RRF constant)
+            0.6,   # vector_weight
+            0.4    # bm25_weight
+        )
+
+    async def search_product_hybrid(
+        self, 
+        query_text: str, 
+        embedding: List[float],
+        match_count: int = 10,
+        brand_filter: str = None,
+        category_filter: str = None
+    ) -> List[Dict[str, Any]]:
+        """Hybrid search for products combining vector + BM25 FTS.
+        
+        Uses Reciprocal Rank Fusion (RRF) to combine:
+        - Dense retrieval: Vector cosine similarity on product embeddings
+        - Sparse retrieval: BM25-style FTS on product name, description, brand, category
+        
+        Supports optional brand and category filters.
+        """
+        query = """
+        SELECT mp_id, mp_name, mp_category, mp_brand, mp_price, 
+               mp_description, mp_image, mp_solves_problem_id,
+               vector_score, bm25_score, hybrid_score, vector_rank, bm25_rank
+        FROM sales.search_product_hybrid($1, $2, $3, $4, $5, $6, $7, $8)
+        """
+        return await self.fetch(
+            query,
+            query_text,
+            str(embedding),
+            match_count,
+            60,              # rrf_k
+            0.6,             # vector_weight
+            0.4,             # bm25_weight
+            brand_filter,
+            category_filter
+        )
 
     async def get_recommendations(self, problem_id: str) -> List[Dict[str, Any]]:
         """Get products linked to a problem via direct FK.

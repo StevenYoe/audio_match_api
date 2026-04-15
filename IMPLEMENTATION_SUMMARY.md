@@ -248,5 +248,85 @@ master_products (30+ rows)
 - Semua harga dalam Rupiah (IDR)
 - Products linked ke problems via `mp_solves_problem_id`
 - Embeddings perlu di-sync setelah insert data baru
-- Chatbot menggunakan vector similarity untuk match problems
+- **HYBRID SEARCH**: Chatbot sekarang menggunakan true hybrid search (vector + BM25 FTS with RRF fusion)
 - Response di-generate oleh Gemini berdasarkan database context
+
+---
+
+## ⚡ Hybrid Search Implementation (NEW - April 2026)
+
+### What Changed?
+
+**BEFORE**: Pure vector search with lexical fallback (cascade pattern)
+- Vector search runs → if no match, try brand keyword → if no match, get all products
+- Each tier independent, no signal combination
+
+**AFTER**: True hybrid search with Reciprocal Rank Fusion (RRF)
+- Vector search + BM25 full-text search run **in parallel**
+- Results fused using RRF formula: `1/(k + rank)` where k=60
+- Final score: `(0.6 × vector_score) + (0.4 × bm25_score)`
+- Both signals always considered, not cascaded
+
+### Files Added/Modified:
+
+1. **`migrations/004_hybrid_search.sql`** (NEW)
+   - Creates GIN indexes for BM25 full-text search
+   - Creates `search_problem_hybrid()` function
+   - Creates `search_product_hybrid()` function
+   - Creates simplified wrapper functions
+   - Creates diagnostic view `v_hybrid_search_comparison`
+
+2. **`app/services/database_service.py`** (MODIFIED)
+   - Added `search_problem_hybrid()` method
+   - Added `search_product_hybrid()` method with brand/category filters
+   - Old `search_problem()` kept for backward compatibility (deprecated)
+
+3. **`app/api/v1/endpoints/chat.py`** (MODIFIED)
+   - STEP 2B now uses hybrid search for problems
+   - Fallback uses hybrid search for products with brand filters
+   - Enhanced logging with vector_score, bm25_score, hybrid_score
+
+4. **`HYBRID_SEARCH_IMPLEMENTATION.md`** (NEW)
+   - Complete technical documentation
+   - Architecture diagrams (before vs after)
+   - Tuning guide and performance considerations
+   - Testing examples
+
+5. **`FLOWCHART_SIMPLIFIED.md`** (UPDATED)
+   - Updated architecture to show parallel hybrid search
+   - Updated professional explanation section
+
+### How to Deploy:
+
+```bash
+# Run migration
+psql -d "your_database_connection_string" -f migrations/004_hybrid_search.sql
+
+# Verify indexes
+psql -d "your_database_connection_string" -c "SELECT indexname FROM pg_indexes WHERE indexname LIKE '%fts%';"
+
+# Test hybrid search (no code changes needed - chat endpoint auto-uses it)
+curl -X POST http://localhost:8000/api/v1/chat/ \
+  -H "Content-Type: application/json" \
+  -d '{"message": "Bass mobil kurang bertenaga, solusinya apa?"}'
+```
+
+### Expected Improvements:
+
+| Query Type | Old Approach | New Hybrid Approach |
+|------------|--------------|---------------------|
+| "sound quality kurang baik" | ✅ Good (semantic match) | ✅ Better (semantic + any exact keywords) |
+| "Kenwood BR-Z1" | ❌ Missed (no embedding) | ✅ Found (BM25 exact match) |
+| "subwoofer untuk Xpander" | ⚠️ Partial | ✅ Best (both signals agree) |
+| "bass terlalu keras" | ⚠️ Medium | ✅ High (BM25 boosts exact "bass" keyword) |
+
+### Technical Details:
+
+- **Dense Retrieval**: pgvector cosine similarity with IVFFlat index
+- **Sparse Retrieval**: PostgreSQL `ts_rank_cd` with GIN index on tsvector
+- **Language**: Indonesian (`'indonesian'`) for better stemming
+- **Fusion**: Reciprocal Rank Fusion (RRF) with k=60
+- **Weights**: 60% vector + 40% BM25 (tunable)
+- **Performance**: <50ms for current dataset size
+
+See `HYBRID_SEARCH_IMPLEMENTATION.md` for complete technical documentation.

@@ -68,10 +68,16 @@ async def chat(
                         "products": car_products
                     }]
 
-        # STEP 2B: If no car mentioned, try vector search on customer problems
+        # STEP 2B: If no car mentioned, try HYBRID search (vector + BM25 FTS) on customer problems
         if not recommendations:
+            # Get embedding for the query
             embedding = await embedding_service.get_embedding(search_query, input_type="query")
-            problems = await db.search_problem(embedding)
+            
+            # Use hybrid search: combines vector similarity + BM25 full-text search
+            problems = await db.search_problem_hybrid(search_query, embedding, match_count=5)
+            logger.info(f"Hybrid search returned {len(problems)} problems for query: {search_query}")
+            if problems:
+                logger.info(f"Top hybrid match: '{problems[0]['mcp_problem_title']}' (vector_score={problems[0].get('vector_score', 0):.3f}, bm25_score={problems[0].get('bm25_score', 0):.3f}, hybrid_score={problems[0].get('hybrid_score', 0):.3f})")
 
             raw_recs = []
             matched_problem_title = ""
@@ -124,7 +130,7 @@ async def chat(
                     "products": solution_products
                 }]
 
-        # Fallback: If no problem matched, try to get products by brand mention or general search
+        # Fallback: If no problem matched, try to get products by brand mention or hybrid product search
         if not recommendations:
             logger.info(f"No problem matched, trying brand/product search for query: {search_query}")
             # Extract brand mentions from query
@@ -134,37 +140,44 @@ async def chat(
 
             if mentioned_brands:
                 logger.info(f"Found brand mentions: {mentioned_brands}")
-                # Get products for mentioned brands
+                # Get products for mentioned brands using hybrid search
                 for brand in mentioned_brands:
-                    brand_products = await db.get_products_by_brand(brand)
+                    # Get embedding for brand-specific search
+                    embedding = await embedding_service.get_embedding(search_query, input_type="query")
+                    brand_products = await db.search_product_hybrid(
+                        query_text=search_query,
+                        embedding=embedding,
+                        match_count=20,
+                        brand_filter=brand
+                    )
                     if brand_products:
                         all_products_context.extend(brand_products)
-                        recommendations_context += f"\n\n{brand.upper()} PRODUCTS IN DATABASE (premium first):\n"
-                        
+                        recommendations_context += f"\n\n{brand.upper()} PRODUCTS IN DATABASE (ranked by hybrid score):\n"
+
                         # Group by category for better organization
                         brand_by_category = {}
                         for prod in brand_products:
-                            cat = prod['product_category']
+                            cat = prod['mp_category']
                             if cat not in brand_by_category:
                                 brand_by_category[cat] = []
                             brand_by_category[cat].append(prod)
-                        
+
                         for category in sorted(brand_by_category.keys()):
                             category_products = brand_by_category[category]
                             recommendations_context += f"\n[{category.upper().replace('_', ' ')}]\n"
                             for prod in category_products:
-                                recommendations_context += f"- {prod['product_name']} - Rp {prod['product_price']}\n"
-                                recommendations_context += f"  {prod['product_description']}\n"
+                                recommendations_context += f"- {prod['mp_name']} - Rp {prod['mp_price']} (hybrid: {prod.get('hybrid_score', 0):.3f})\n"
+                                recommendations_context += f"  {prod['mp_description']}\n"
 
                 # Build a single RecommendedSolution with all brand products
                 if all_products_context:
                     solution_products = [
                         {
-                            "product_id": str(prod['product_id']),
-                            "product_name": prod['product_name'],
-                            "product_category": prod['product_category'],
-                            "product_price": float(prod['product_price']),
-                            "image": prod.get('product_image') or "⚡"
+                            "product_id": str(prod['mp_id']),
+                            "product_name": prod['mp_name'],
+                            "product_category": prod['mp_category'],
+                            "product_price": float(prod['mp_price']),
+                            "image": prod.get('mp_image') or "⚡"
                         }
                         for prod in all_products_context
                     ]
@@ -175,35 +188,40 @@ async def chat(
                         "products": solution_products
                     }]
             else:
-                # No brand mentioned, get all products as fallback
-                logger.info("No brand mentioned, getting all products as fallback")
-                all_products = await db.get_all_active_products()
+                # No brand mentioned, get all products as fallback using hybrid search
+                logger.info("No brand mentioned, getting all products via hybrid search as fallback")
+                embedding = await embedding_service.get_embedding(search_query, input_type="query")
+                all_products = await db.search_product_hybrid(
+                    query_text=search_query,
+                    embedding=embedding,
+                    match_count=30
+                )
                 if all_products:
                     all_products_context.extend(all_products)
-                    recommendations_context += "\n\nALL PRODUCTS IN DATABASE (organized by category, premium first):\n"
-                    
+                    recommendations_context += "\n\nALL PRODUCTS IN DATABASE (ranked by hybrid score):\n"
+
                     # Group by category and brand tier
                     products_by_category = {}
                     for prod in all_products:
-                        cat = prod['product_category']
+                        cat = prod['mp_category']
                         if cat not in products_by_category:
                             products_by_category[cat] = []
                         products_by_category[cat].append(prod)
-                    
+
                     for category in sorted(products_by_category.keys()):
                         category_products = products_by_category[category]
                         recommendations_context += f"\n[{category.upper().replace('_', ' ')}]\n"
                         for prod in category_products:
-                            recommendations_context += f"- {prod['product_name']} - Rp {prod['product_price']}\n"
-                            recommendations_context += f"  {prod['product_description']}\n"
+                            recommendations_context += f"- {prod['mp_name']} - Rp {prod['mp_price']} (hybrid: {prod.get('hybrid_score', 0):.3f})\n"
+                            recommendations_context += f"  {prod['mp_description']}\n"
 
                     solution_products = [
                         {
-                            "product_id": str(prod['product_id']),
-                            "product_name": prod['product_name'],
-                            "product_category": prod['product_category'],
-                            "product_price": float(prod['product_price']),
-                            "image": prod.get('product_image') or "⚡"
+                            "product_id": str(prod['mp_id']),
+                            "product_name": prod['mp_name'],
+                            "product_category": prod['mp_category'],
+                            "product_price": float(prod['mp_price']),
+                            "image": prod.get('mp_image') or "⚡"
                         }
                         for prod in all_products
                     ]

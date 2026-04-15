@@ -38,13 +38,18 @@ graph TB
         
         Analyze --> DetectCar{Car Mentioned?}
         DetectCar -->|Yes| CarPath[🚗 Get Car Products]
-        DetectCar -->|No| AIPath[🤖 AI Search]
-        
+        DetectCar -->|No| AIPath[🤖 AI Hybrid Search]
+
         CarPath --> BuildContext[Build Context]
-        AIPath --> VectorSearch[Vector Similarity Search]
-        VectorSearch --> FindProblem{Problem Found?}
+        AIPath --> EmbedQuery[Embed Query with VoyageAI]
+        EmbedQuery --> ParallelSearch[⚡ Parallel Hybrid Search]
+        ParallelSearch --> VectorSearch[🧠 Dense: Vector Similarity]
+        ParallelSearch --> BM25Search[📝 Sparse: BM25 Full-Text Search]
+        VectorSearch --> RRF[Fuse with Reciprocal Rank Fusion]
+        BM25Search --> RRF
+        RRF --> FindProblem{Problem Found?}
         FindProblem -->|Yes| GetProducts[Get Matching Products]
-        FindProblem -->|No| Fallback[Try Brand/General Search]
+        FindProblem -->|No| Fallback[Try Hybrid Product Search]
         GetProducts --> BuildContext
         Fallback --> BuildContext
         
@@ -187,27 +192,34 @@ graph TB
 
 ### 1. System Architecture Overview
 
-AudioMatch API adalah **AI-powered sales chatbot** yang dirancang untuk membantu pelanggan toko audio mobil (Rendy Audio) menemukan produk yang tepat berdasarkan masalah atau kebutuhan mereka. Sistem ini mengimplementasikan **hybrid retrieval approach** yang menggabungkan tiga strategi pencarian:
+AudioMatch API adalah **AI-powered sales chatbot** yang dirancang untuk membantu pelanggan toko audio mobil (Rendy Audio) menemukan produk yang tepat berdasarkan masalah atau kebutuhan mereka. Sistem ini mengimplementasikan **true hybrid search approach** yang menggabungkan:
 
 - **Car-based retrieval**: Mendeteksi mention mobil dan merekomendasikan produk yang kompatibel
-- **Vector-based semantic search**: Menggunakan neural embeddings untuk mencocokkan masalah user dengan masalah yang ada di database
-- **Lexical fallback**: Brand-based dan general product search sebagai backup
+- **Dense retrieval (Vector similarity)**: Menggunakan neural embeddings untuk semantic understanding
+- **Sparse retrieval (BM25 full-text search)**: PostgreSQL ts_rank_cd untuk exact keyword matching
+- **Reciprocal Rank Fusion (RRF)**: Menggabungkan kedua sinyal dengan weighted scoring (60% vector + 40% BM25)
+- **Lexical fallback**: Brand-based dan hybrid product search sebagai backup
 
-Sistem dibangun menggunakan **FastAPI** (Python) dengan arsitektur **service layer pattern**, menggunakan **PostgreSQL dengan pgvector** untuk vector search, **VoyageAI** untuk embeddings, **Google Gemini** untuk LLM, dan **Upstash Redis** untuk session management.
+Sistem dibangun menggunakan **FastAPI** (Python) dengan arsitektur **service layer pattern**, menggunakan **PostgreSQL dengan pgvector** untuk vector search dan **GIN indexes** untuk BM25 full-text search, **VoyageAI** untuk embeddings, **Google Gemini** untuk LLM, dan **Upstash Redis** untuk session management.
 
 ---
 
 ### 2. Main Chat Process
 
-Chat endpoint (`POST /api/v1/chat/`) merupakan core workflow yang mengimplementasikan **multi-strategy recommendation engine**:
+Chat endpoint (`POST /api/v1/chat/`) merupakan core workflow yang mengimplementasikan **hybrid recommendation engine with RRF fusion**:
 
 **Session Management**: Sistem menggunakan UUID-based session identification dengan conversation history yang disimpan di Redis (24-hour TTL). Pattern ini memungkinkan **stateless design** yang cocok untuk serverless deployment di Vercel.
 
 **Car Detection Layer**: Sistem melakukan keyword-based extraction untuk mendeteksi mention dari 50+ car models. Jika car terdetected, sistem retrieve car specifications (type, size, dashboard type, subwoofer space) dan filter compatible products.
 
-**Vector Search Layer**: Jika tidak ada car yang mentioned, user query di-embed menggunakan VoyageAI (1024 dimensions) dan dibandingkan dengan problem embeddings menggunakan cosine similarity. Threshold 0.4 menentukan apakah match considered valid. Top 3 matches returned, dan products yang linked ke best-matched problem di-retrieve.
+**Hybrid Search Layer** (NEW ⚡): Jika tidak ada car yang mentioned, sistem menjalankan **true hybrid search**:
+1. User query di-embed menggunakan VoyageAI (1024 dimensions)
+2. **Parallel execution**: Vector search (cosine similarity) + BM25 full-text search (ts_rank_cd) berjalan bersamaan
+3. **Reciprocal Rank Fusion (RRF)**: Hasil dari kedua metode digabung dengan formula `1/(k + rank)` dimana k=60
+4. **Weighted scoring**: Final score = (0.6 × vector_score) + (0.4 × bm25_score)
+5. Threshold hybrid_score > 0.3 menentukan apakah match considered valid. Top 5 matches returned dengan detailed scores (vector_score, bm25_score, hybrid_score, vector_rank, bm25_rank). Products yang linked ke best-matched problem di-retrieve.
 
-**Fallback Layer**: Jika similarity < 0.4 (tidak ada problem matched), sistem extract brand mentions. Jika brand mentioned (e.g., "Kenwood"), products untuk brand tersebut di-retrieve. Jika tidak, semua active products di-return sebagai general fallback.
+**Fallback Layer**: Jika tidak ada problem matched, sistem menggunakan **hybrid product search** dengan brand filter jika brand disebutkan (e.g., "Kenwood"). Products untuk brand tersebut di-retrieve dan di-rank berdasarkan hybrid score. Jika tidak ada brand mentioned, semua active products di-return sebagai general fallback menggunakan hybrid search.
 
 **LLM Generation**: Context yang terkumpul (car specs / problem + products / brand products / all products) di-inject ke system prompt bersama rules dan conversation history (last 8 messages). Prompt di-send ke Gemini API untuk generate response. Retry logic dengan exponential backoff handle API failures.
 
