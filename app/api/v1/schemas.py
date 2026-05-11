@@ -3,7 +3,7 @@ from typing import List, Optional, Dict, Any
 
 class ChatRequest(BaseModel):
     session_id: Optional[str] = Field(None, description="Unique identifier for the conversation session.")
-    message: str = Field(..., description="The user's message.")
+    message: str = Field(..., min_length=1, description="The user's message.")
 
 class SolutionProduct(BaseModel):
     id: str = Field(..., alias="product_id")

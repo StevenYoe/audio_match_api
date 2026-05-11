@@ -168,6 +168,30 @@ class DatabaseService:
         """
         return await self.fetch(query)
 
+    async def get_products(self, category: str = "all") -> List[Dict[str, Any]]:
+        """Get active products with optional category filter."""
+        if not category or category.lower() == "all":
+            query = """
+            SELECT
+                mp_id, mp_name, mp_category, mp_brand,
+                mp_price, mp_description, mp_image, mp_is_active
+            FROM sales.master_products
+            WHERE mp_is_active = TRUE
+            ORDER BY mp_category, mp_price ASC;
+            """
+            return await self.fetch(query)
+        else:
+            query = """
+            SELECT
+                mp_id, mp_name, mp_category, mp_brand,
+                mp_price, mp_description, mp_image, mp_is_active
+            FROM sales.master_products
+            WHERE mp_is_active = TRUE
+              AND LOWER(mp_category) = LOWER($1)
+            ORDER BY mp_price ASC;
+            """
+            return await self.fetch(query, category)
+
     async def insert_products(self, products: List[Dict[str, Any]]) -> int:
         """Bulk insert products."""
         if not products:

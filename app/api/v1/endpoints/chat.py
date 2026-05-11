@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException
+import time
+from collections import defaultdict
+from fastapi import APIRouter, Depends, HTTPException, Request
 from app.api.v1 import schemas
 from app.core.config import settings
 from app.core.dependencies import get_db, get_redis, get_embedding_service_dep, get_llm_service_dep
@@ -14,7 +16,21 @@ import pytz
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
-@router.post("/", response_model=schemas.ChatResponse)
+# In-process rate limiter: per-IP sliding window
+_ip_requests: dict = defaultdict(list)
+
+async def rate_limit_dep(request: Request):
+    if not settings.RATE_LIMIT_ENABLED:
+        return
+    ip = request.client.host if request.client else "unknown"
+    now = time.time()
+    window_start = now - settings.RATE_LIMIT_WINDOW
+    _ip_requests[ip] = [t for t in _ip_requests[ip] if t > window_start]
+    if len(_ip_requests[ip]) >= settings.RATE_LIMIT_REQUESTS:
+        raise HTTPException(status_code=429, detail="Too many requests. Please try again later.")
+    _ip_requests[ip].append(now)
+
+@router.post("/", response_model=schemas.ChatResponse, dependencies=[Depends(rate_limit_dep)])
 async def chat(
     request: schemas.ChatRequest,
     db: DatabaseService = Depends(get_db),

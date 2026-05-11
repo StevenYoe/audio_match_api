@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 from starlette.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
-from app.api.v1.endpoints import chat, admin, import_data
+from app.api.v1.endpoints import chat, admin, import_data, products
 
 # Configure logging
 logging.basicConfig(level=settings.LOG_LEVEL)
@@ -33,6 +33,7 @@ if settings.CORS_ORIGINS:
 app.include_router(chat.router, prefix="/api/v1/chat", tags=["Chat"])
 app.include_router(admin.router, prefix="/api/v1/admin", tags=["Admin"])
 app.include_router(import_data.router, prefix="/api/v1/admin/import-data", tags=["Data Import"])
+app.include_router(products.router, prefix="/api/v1/products", tags=["Products"])
 
 
 @app.get("/", tags=["Root"])
