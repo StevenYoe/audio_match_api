@@ -1,0 +1,533 @@
+{
+  "timestamp": "2026-05-13 01:27:00",
+  "summary": {
+    "NDCG@3": 0.81,
+    "NDCG@5": 0.8878,
+    "Precision@3": 0.6445,
+    "Precision@5": 0.5667
+  },
+  "targets": {
+    "NDCG@3": 0.75,
+    "NDCG@5": 0.7,
+    "Precision@3": 0.7,
+    "Precision@5": 0.65
+  },
+  "pass_fail": {
+    "NDCG@3": true,
+    "NDCG@5": true,
+    "Precision@3": false,
+    "Precision@5": false
+  },
+  "per_category": {
+    "Kompatibilitas Komponen": {
+      "count": 8,
+      "NDCG@3": 0.6713,
+      "NDCG@5": 0.7651,
+      "Precision@3": 0.4167,
+      "Precision@5": 0.3
+    },
+    "Produk Spesifik": {
+      "count": 7,
+      "NDCG@3": 0.8753,
+      "NDCG@5": 0.9308,
+      "Precision@3": 0.5714,
+      "Precision@5": 0.4571
+    },
+    "Konseptual dan Edukatif": {
+      "count": 8,
+      "NDCG@3": 0.8831,
+      "NDCG@5": 0.9472,
+      "Precision@3": 0.7917,
+      "Precision@5": 0.675
+    },
+    "Berbasis Kendaraan": {
+      "count": 7,
+      "NDCG@3": 0.8198,
+      "NDCG@5": 0.9171,
+      "Precision@3": 0.8095,
+      "Precision@5": 0.8571
+    }
+  },
+  "per_query": [
+    {
+      "query_id": "K01",
+      "kategori": "Kompatibilitas Komponen",
+      "query_text": "amplifier 4 channel 75 watt cocok untuk berapa speaker?",
+      "NDCG@3": 0.5,
+      "NDCG@5": 0.5,
+      "Precision@3": 0.3333,
+      "Precision@5": 0.2,
+      "relevances": [
+        "0",
+        "0",
+        "1",
+        "0",
+        "0"
+      ]
+    },
+    {
+      "query_id": "K02",
+      "kategori": "Kompatibilitas Komponen",
+      "query_text": "berapa watt amplifier yang dibutuhkan untuk subwoofer 12 inch?",
+      "NDCG@3": 0.2754,
+      "NDCG@5": 0.595,
+      "Precision@3": 0.3333,
+      "Precision@5": 0.4,
+      "relevances": [
+        "1",
+        "0",
+        "0",
+        "0",
+        "2"
+      ]
+    },
+    {
+      "query_id": "K03",
+      "kategori": "Kompatibilitas Komponen",
+      "query_text": "speaker impedansi 4 ohm bisa dipasang di amplifier 8 ohm?",
+      "NDCG@3": 0.6309,
+      "NDCG@5": 0.6309,
+      "Precision@3": 0.3333,
+      "Precision@5": 0.2,
+      "relevances": [
+        "0",
+        "1",
+        "0",
+        "0",
+        "0"
+      ]
+    },
+    {
+      "query_id": "K04",
+      "kategori": "Kompatibilitas Komponen",
+      "query_text": "cara setting gain amplifier agar speaker tidak distorsi",
+      "NDCG@3": 0.9639,
+      "NDCG@5": 0.9639,
+      "Precision@3": 0.6667,
+      "Precision@5": 0.4,
+      "relevances": [
+        "2",
+        "0",
+        "1",
+        "0",
+        "0"
+      ]
+    },
+    {
+      "query_id": "K05",
+      "kategori": "Kompatibilitas Komponen",
+      "query_text": "bisa pasang 6 speaker ke amplifier 4 channel?",
+      "NDCG@3": 1.0,
+      "NDCG@5": 1.0,
+      "Precision@3": 0.6667,
+      "Precision@5": 0.4,
+      "relevances": [
+        "1",
+        "1",
+        "0",
+        "0",
+        "0"
+      ]
+    },
+    {
+      "query_id": "K06",
+      "kategori": "Kompatibilitas Komponen",
+      "query_text": "perbedaan RCA output 4V dan 2V pada head unit untuk amplifier",
+      "NDCG@3": 1.0,
+      "NDCG@5": 1.0,
+      "Precision@3": 0.6667,
+      "Precision@5": 0.4,
+      "relevances": [
+        "1",
+        "1",
+        "0",
+        "0",
+        "0"
+      ]
+    },
+    {
+      "query_id": "K07",
+      "kategori": "Kompatibilitas Komponen",
+      "query_text": "cara memilih crossover yang tepat untuk speaker component 2 way",
+      "NDCG@3": 0.0,
+      "NDCG@5": 0.4307,
+      "Precision@3": 0.0,
+      "Precision@5": 0.2,
+      "relevances": [
+        "0",
+        "0",
+        "0",
+        "1",
+        "0"
+      ]
+    },
+    {
+      "query_id": "K08",
+      "kategori": "Kompatibilitas Komponen",
+      "query_text": "ukuran kabel power amplifier yang direkomendasikan",
+      "NDCG@3": 1.0,
+      "NDCG@5": 1.0,
+      "Precision@3": 0.3333,
+      "Precision@5": 0.2,
+      "relevances": [
+        "2",
+        "0",
+        "0",
+        "0",
+        "0"
+      ]
+    },
+    {
+      "query_id": "P01",
+      "kategori": "Produk Spesifik",
+      "query_text": "pioneer DEH-S6250BT head unit",
+      "NDCG@3": 0.879,
+      "NDCG@5": 0.9726,
+      "Precision@3": 0.6667,
+      "Precision@5": 0.6,
+      "relevances": [
+        "2",
+        "1",
+        "0",
+        "0",
+        "1"
+      ]
+    },
+    {
+      "query_id": "P02",
+      "kategori": "Produk Spesifik",
+      "query_text": "kenwood KDC-BT560U spesifikasi dan harga",
+      "NDCG@3": 1.0,
+      "NDCG@5": 1.0,
+      "Precision@3": 0.3333,
+      "Precision@5": 0.2,
+      "relevances": [
+        "1",
+        "0",
+        "0",
+        "0",
+        "0"
+      ]
+    },
+    {
+      "query_id": "P03",
+      "kategori": "Produk Spesifik",
+      "query_text": "nakamichi na3605 fitur dan keunggulan",
+      "NDCG@3": 1.0,
+      "NDCG@5": 1.0,
+      "Precision@3": 0.3333,
+      "Precision@5": 0.2,
+      "relevances": [
+        "1",
+        "0",
+        "0",
+        "0",
+        "0"
+      ]
+    },
+    {
+      "query_id": "P04",
+      "kategori": "Produk Spesifik",
+      "query_text": "hertz dieci speaker component DCX 165.3",
+      "NDCG@3": 0.7003,
+      "NDCG@5": 0.8045,
+      "Precision@3": 0.6667,
+      "Precision@5": 0.6,
+      "relevances": [
+        "1",
+        "2",
+        "0",
+        "1",
+        "0"
+      ]
+    },
+    {
+      "query_id": "P05",
+      "kategori": "Produk Spesifik",
+      "query_text": "JVC KD-X371BT head unit bluetooth",
+      "NDCG@3": 0.8262,
+      "NDCG@5": 0.9448,
+      "Precision@3": 0.3333,
+      "Precision@5": 0.4,
+      "relevances": [
+        "2",
+        "0",
+        "0",
+        "1",
+        "0"
+      ]
+    },
+    {
+      "query_id": "P06",
+      "kategori": "Produk Spesifik",
+      "query_text": "subwoofer rockford fosgate punch p3",
+      "NDCG@3": 0.9073,
+      "NDCG@5": 0.979,
+      "Precision@3": 0.6667,
+      "Precision@5": 0.6,
+      "relevances": [
+        "2",
+        "2",
+        "0",
+        "0",
+        "1"
+      ]
+    },
+    {
+      "query_id": "P07",
+      "kategori": "Produk Spesifik",
+      "query_text": "tweeter JL Audio C1 075ct",
+      "NDCG@3": 0.8146,
+      "NDCG@5": 0.8146,
+      "Precision@3": 1.0,
+      "Precision@5": 0.6,
+      "relevances": [
+        "1",
+        "2",
+        "2",
+        "0",
+        "0"
+      ]
+    },
+    {
+      "query_id": "C01",
+      "kategori": "Konseptual dan Edukatif",
+      "query_text": "apa fungsi head unit di sistem audio mobil?",
+      "NDCG@3": 1.0,
+      "NDCG@5": 0.9925,
+      "Precision@3": 1.0,
+      "Precision@5": 0.8,
+      "relevances": [
+        "2",
+        "2",
+        "1",
+        "0",
+        "1"
+      ]
+    },
+    {
+      "query_id": "C02",
+      "kategori": "Konseptual dan Edukatif",
+      "query_text": "perbedaan speaker coaxial dan speaker component",
+      "NDCG@3": 0.6291,
+      "NDCG@5": 0.8167,
+      "Precision@3": 1.0,
+      "Precision@5": 1.0,
+      "relevances": [
+        "1",
+        "2",
+        "1",
+        "2",
+        "1"
+      ]
+    },
+    {
+      "query_id": "C03",
+      "kategori": "Konseptual dan Edukatif",
+      "query_text": "kenapa bass mobil tidak terasa nendang padahal sudah pasang subwoofer?",
+      "NDCG@3": 0.879,
+      "NDCG@5": 0.9726,
+      "Precision@3": 0.6667,
+      "Precision@5": 0.6,
+      "relevances": [
+        "2",
+        "1",
+        "0",
+        "0",
+        "1"
+      ]
+    },
+    {
+      "query_id": "C04",
+      "kategori": "Konseptual dan Edukatif",
+      "query_text": "bagaimana cara upgrade audio mobil untuk pemula dengan budget terbatas?",
+      "NDCG@3": 1.0,
+      "NDCG@5": 1.0,
+      "Precision@3": 1.0,
+      "Precision@5": 1.0,
+      "relevances": [
+        "2",
+        "2",
+        "1",
+        "1",
+        "1"
+      ]
+    },
+    {
+      "query_id": "C05",
+      "kategori": "Konseptual dan Edukatif",
+      "query_text": "apa itu DSP digital signal processor dalam audio mobil?",
+      "NDCG@3": 0.9197,
+      "NDCG@5": 0.9197,
+      "Precision@3": 0.6667,
+      "Precision@5": 0.4,
+      "relevances": [
+        "1",
+        "0",
+        "1",
+        "0",
+        "0"
+      ]
+    },
+    {
+      "query_id": "C06",
+      "kategori": "Konseptual dan Edukatif",
+      "query_text": "perbedaan subwoofer sealed box dan ported box untuk kualitas bass",
+      "NDCG@3": 0.6733,
+      "NDCG@5": 0.9118,
+      "Precision@3": 0.6667,
+      "Precision@5": 0.8,
+      "relevances": [
+        "2",
+        "1",
+        "0",
+        "2",
+        "1"
+      ]
+    },
+    {
+      "query_id": "C07",
+      "kategori": "Konseptual dan Edukatif",
+      "query_text": "cara menghilangkan noise suara dengung di audio mobil",
+      "NDCG@3": 0.9639,
+      "NDCG@5": 0.9639,
+      "Precision@3": 0.6667,
+      "Precision@5": 0.4,
+      "relevances": [
+        "2",
+        "0",
+        "1",
+        "0",
+        "0"
+      ]
+    },
+    {
+      "query_id": "C08",
+      "kategori": "Konseptual dan Edukatif",
+      "query_text": "mengapa suara speaker mobil pecah distorsi saat volume tinggi?",
+      "NDCG@3": 1.0,
+      "NDCG@5": 1.0,
+      "Precision@3": 0.6667,
+      "Precision@5": 0.4,
+      "relevances": [
+        "2",
+        "1",
+        "0",
+        "0",
+        "0"
+      ]
+    },
+    {
+      "query_id": "V01",
+      "kategori": "Berbasis Kendaraan",
+      "query_text": "rekomendasi upgrade audio untuk Mitsubishi Xpander",
+      "NDCG@3": 0.8026,
+      "NDCG@5": 0.9445,
+      "Precision@3": 1.0,
+      "Precision@5": 1.0,
+      "relevances": [
+        "2",
+        "1",
+        "2",
+        "2",
+        "1"
+      ]
+    },
+    {
+      "query_id": "V02",
+      "kategori": "Berbasis Kendaraan",
+      "query_text": "speaker yang cocok untuk Honda Brio city car",
+      "NDCG@3": 1.0,
+      "NDCG@5": 1.0,
+      "Precision@3": 1.0,
+      "Precision@5": 1.0,
+      "relevances": [
+        "2",
+        "1",
+        "1",
+        "1",
+        "1"
+      ]
+    },
+    {
+      "query_id": "V03",
+      "kategori": "Berbasis Kendaraan",
+      "query_text": "subwoofer terbaik untuk Toyota Avanza MPV",
+      "NDCG@3": 0.6052,
+      "NDCG@5": 0.7273,
+      "Precision@3": 0.6667,
+      "Precision@5": 0.8,
+      "relevances": [
+        "1",
+        "0",
+        "2",
+        "1",
+        "1"
+      ]
+    },
+    {
+      "query_id": "V04",
+      "kategori": "Berbasis Kendaraan",
+      "query_text": "setup audio lengkap untuk Toyota Fortuner SUV",
+      "NDCG@3": 1.0,
+      "NDCG@5": 1.0,
+      "Precision@3": 1.0,
+      "Precision@5": 1.0,
+      "relevances": [
+        "2",
+        "1",
+        "1",
+        "1",
+        "1"
+      ]
+    },
+    {
+      "query_id": "V05",
+      "kategori": "Berbasis Kendaraan",
+      "query_text": "upgrade head unit android untuk Honda Jazz",
+      "NDCG@3": 0.8473,
+      "NDCG@5": 0.9465,
+      "Precision@3": 0.6667,
+      "Precision@5": 0.8,
+      "relevances": [
+        "2",
+        "0",
+        "1",
+        "1",
+        "1"
+      ]
+    },
+    {
+      "query_id": "V06",
+      "kategori": "Berbasis Kendaraan",
+      "query_text": "rekomendasi audio system untuk Suzuki Ertiga",
+      "NDCG@3": 0.8344,
+      "NDCG@5": 0.9131,
+      "Precision@3": 0.6667,
+      "Precision@5": 0.8,
+      "relevances": [
+        "2",
+        "0",
+        "2",
+        "1",
+        "1"
+      ]
+    },
+    {
+      "query_id": "V07",
+      "kategori": "Berbasis Kendaraan",
+      "query_text": "tweeter dan speaker depan untuk Hyundai Stargazer",
+      "NDCG@3": 0.649,
+      "NDCG@5": 0.8886,
+      "Precision@3": 0.6667,
+      "Precision@5": 0.6,
+      "relevances": [
+        "2",
+        "0",
+        "1",
+        "2",
+        "0"
+      ]
+    }
+  ]
+}

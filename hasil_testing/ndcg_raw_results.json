@@ -1,0 +1,1705 @@
+{
+  "timestamp": "2026-05-13 01:02:03",
+  "queries": [
+    {
+      "query_id": "K01",
+      "kategori": "Kompatibilitas Komponen",
+      "query_text": "amplifier 4 channel 75 watt cocok untuk berapa speaker?",
+      "embedding_available": true,
+      "retrieved_problems": [
+        {
+          "mcp_id": "4dcf193c-d484-4fe4-9814-73d5823bf132",
+          "mcp_problem_title": "Butuh audio yang cocok untuk keluarga dan anak-anak",
+          "mcp_description": "Customer butuh sistem audio yang aman untuk anak-anak, volume bisa dibatasi, dan ada fitur entertainment seperti layar untuk video.",
+          "vector_score": 0.4814372978881276,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.28886237873287657,
+          "vector_rank": 1,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "0745ed72-7722-4991-96a2-33948e00631f",
+          "mcp_problem_title": "Speaker bawaan mobil jelek, mau ganti",
+          "mcp_description": "Speaker original pabrik terasa flat dan tidak bertenaga. Customer ingin upgrade langsung terasa.",
+          "vector_score": 0.47566872980185737,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.28540123788111443,
+          "vector_rank": 2,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "4fe8ab59-0f18-411b-8d75-9c5c746e57fd",
+          "mcp_problem_title": "Suara pecah dan distorsi di volume tinggi",
+          "mcp_description": "Speaker mengalami distorsi saat volume dinaikkan. Suara tidak bersih dan pecah.",
+          "vector_score": 0.4749142587389329,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.2849485552433597,
+          "vector_rank": 3,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "55a2ab16-143c-466d-903a-08b454634306",
+          "mcp_problem_title": "Ingin audio lebih keras untuk kompetisi/sound pressure",
+          "mcp_description": "Customer ingin sistem audio yang sangat keras untuk keperluan kompetisi SPL atau sound pressure.",
+          "vector_score": 0.4696185625054199,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.28177113750325194,
+          "vector_rank": 4,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "bad8f281-a1ff-4abe-8238-89365e95e58d",
+          "mcp_problem_title": "Soundstage sempit, suara terasa datar",
+          "mcp_description": "Posisi suara terasa menyatu dan tidak ada kedalaman. Tidak terasa seperti live performance.",
+          "vector_score": 0.46494550348627484,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.2789673020917649,
+          "vector_rank": 5,
+          "bm25_rank": null
+        }
+      ]
+    },
+    {
+      "query_id": "K02",
+      "kategori": "Kompatibilitas Komponen",
+      "query_text": "berapa watt amplifier yang dibutuhkan untuk subwoofer 12 inch?",
+      "embedding_available": true,
+      "retrieved_problems": [
+        {
+          "mcp_id": "55a2ab16-143c-466d-903a-08b454634306",
+          "mcp_problem_title": "Ingin audio lebih keras untuk kompetisi/sound pressure",
+          "mcp_description": "Customer ingin sistem audio yang sangat keras untuk keperluan kompetisi SPL atau sound pressure.",
+          "vector_score": 0.5240512831302875,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.3144307698781725,
+          "vector_rank": 1,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "8b507336-5b54-4035-be10-a437622a6d7a",
+          "mcp_problem_title": "Ingin upgrade audio tapi budget terbatas",
+          "mcp_description": "Customer mau upgrade sistem audio tapi perlu dilakukan bertahap sesuai budget.",
+          "vector_score": 0.5186326239048249,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.31117957434289495,
+          "vector_rank": 2,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "4dcf193c-d484-4fe4-9814-73d5823bf132",
+          "mcp_problem_title": "Butuh audio yang cocok untuk keluarga dan anak-anak",
+          "mcp_description": "Customer butuh sistem audio yang aman untuk anak-anak, volume bisa dibatasi, dan ada fitur entertainment seperti layar untuk video.",
+          "vector_score": 0.5003536642230229,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.3002121985338137,
+          "vector_rank": 3,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "0745ed72-7722-4991-96a2-33948e00631f",
+          "mcp_problem_title": "Speaker bawaan mobil jelek, mau ganti",
+          "mcp_description": "Speaker original pabrik terasa flat dan tidak bertenaga. Customer ingin upgrade langsung terasa.",
+          "vector_score": 0.4933525904065621,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.29601155424393727,
+          "vector_rank": 4,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "1c534f23-d636-41ca-9719-ee9493bf70ad",
+          "mcp_problem_title": "Bass kurang bertenaga",
+          "mcp_description": "Suara bass terasa tipis dan tidak menggetarkan, customer ingin bass yang lebih powerful untuk musik EDM, hip-hop, dan reggae.",
+          "vector_score": 0.4902652630763359,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.29415915784580154,
+          "vector_rank": 5,
+          "bm25_rank": null
+        }
+      ]
+    },
+    {
+      "query_id": "K03",
+      "kategori": "Kompatibilitas Komponen",
+      "query_text": "speaker impedansi 4 ohm bisa dipasang di amplifier 8 ohm?",
+      "embedding_available": true,
+      "retrieved_problems": [
+        {
+          "mcp_id": "43e3985c-fbf1-43c1-bb95-14f57024ab54",
+          "mcp_problem_title": "Ingin install audio tapi tidak mau potong kabel",
+          "mcp_description": "Customer ingin upgrade audio mobil tetapi tidak mau merusak kabel original pabrik. Ingin instalasi yang reversible dan rapi.",
+          "vector_score": 0.5024298423696083,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.301457905421765,
+          "vector_rank": 1,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "4fe8ab59-0f18-411b-8d75-9c5c746e57fd",
+          "mcp_problem_title": "Suara pecah dan distorsi di volume tinggi",
+          "mcp_description": "Speaker mengalami distorsi saat volume dinaikkan. Suara tidak bersih dan pecah.",
+          "vector_score": 0.49976614120410545,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.29985968472246327,
+          "vector_rank": 2,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "0745ed72-7722-4991-96a2-33948e00631f",
+          "mcp_problem_title": "Speaker bawaan mobil jelek, mau ganti",
+          "mcp_description": "Speaker original pabrik terasa flat dan tidak bertenaga. Customer ingin upgrade langsung terasa.",
+          "vector_score": 0.482610463059573,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.2895662778357438,
+          "vector_rank": 3,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "8b507336-5b54-4035-be10-a437622a6d7a",
+          "mcp_problem_title": "Ingin upgrade audio tapi budget terbatas",
+          "mcp_description": "Customer mau upgrade sistem audio tapi perlu dilakukan bertahap sesuai budget.",
+          "vector_score": 0.4660097658634186,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.2796058595180511,
+          "vector_rank": 4,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "bad8f281-a1ff-4abe-8238-89365e95e58d",
+          "mcp_problem_title": "Soundstage sempit, suara terasa datar",
+          "mcp_description": "Posisi suara terasa menyatu dan tidak ada kedalaman. Tidak terasa seperti live performance.",
+          "vector_score": 0.4578518917737169,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.2747111350642301,
+          "vector_rank": 5,
+          "bm25_rank": null
+        }
+      ]
+    },
+    {
+      "query_id": "K04",
+      "kategori": "Kompatibilitas Komponen",
+      "query_text": "cara setting gain amplifier agar speaker tidak distorsi",
+      "embedding_available": true,
+      "retrieved_problems": [
+        {
+          "mcp_id": "4fe8ab59-0f18-411b-8d75-9c5c746e57fd",
+          "mcp_problem_title": "Suara pecah dan distorsi di volume tinggi",
+          "mcp_description": "Speaker mengalami distorsi saat volume dinaikkan. Suara tidak bersih dan pecah.",
+          "vector_score": 0.5707655464690313,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.3424593278814188,
+          "vector_rank": 1,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "43e3985c-fbf1-43c1-bb95-14f57024ab54",
+          "mcp_problem_title": "Ingin install audio tapi tidak mau potong kabel",
+          "mcp_description": "Customer ingin upgrade audio mobil tetapi tidak mau merusak kabel original pabrik. Ingin instalasi yang reversible dan rapi.",
+          "vector_score": 0.48951119434568025,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.29370671660740816,
+          "vector_rank": 2,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "55a2ab16-143c-466d-903a-08b454634306",
+          "mcp_problem_title": "Ingin audio lebih keras untuk kompetisi/sound pressure",
+          "mcp_description": "Customer ingin sistem audio yang sangat keras untuk keperluan kompetisi SPL atau sound pressure.",
+          "vector_score": 0.48252302408218384,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.2895138144493103,
+          "vector_rank": 3,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "0745ed72-7722-4991-96a2-33948e00631f",
+          "mcp_problem_title": "Speaker bawaan mobil jelek, mau ganti",
+          "mcp_description": "Speaker original pabrik terasa flat dan tidak bertenaga. Customer ingin upgrade langsung terasa.",
+          "vector_score": 0.4815747428878997,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.2889448457327398,
+          "vector_rank": 4,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "1c534f23-d636-41ca-9719-ee9493bf70ad",
+          "mcp_problem_title": "Bass kurang bertenaga",
+          "mcp_description": "Suara bass terasa tipis dan tidak menggetarkan, customer ingin bass yang lebih powerful untuk musik EDM, hip-hop, dan reggae.",
+          "vector_score": 0.47685007681995883,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.28611004609197527,
+          "vector_rank": 5,
+          "bm25_rank": null
+        }
+      ]
+    },
+    {
+      "query_id": "K05",
+      "kategori": "Kompatibilitas Komponen",
+      "query_text": "bisa pasang 6 speaker ke amplifier 4 channel?",
+      "embedding_available": true,
+      "retrieved_problems": [
+        {
+          "mcp_id": "43e3985c-fbf1-43c1-bb95-14f57024ab54",
+          "mcp_problem_title": "Ingin install audio tapi tidak mau potong kabel",
+          "mcp_description": "Customer ingin upgrade audio mobil tetapi tidak mau merusak kabel original pabrik. Ingin instalasi yang reversible dan rapi.",
+          "vector_score": 0.5057450217768565,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.30344701306611394,
+          "vector_rank": 1,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "4fe8ab59-0f18-411b-8d75-9c5c746e57fd",
+          "mcp_problem_title": "Suara pecah dan distorsi di volume tinggi",
+          "mcp_description": "Speaker mengalami distorsi saat volume dinaikkan. Suara tidak bersih dan pecah.",
+          "vector_score": 0.5044809273813505,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.3026885564288103,
+          "vector_rank": 2,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "8b507336-5b54-4035-be10-a437622a6d7a",
+          "mcp_problem_title": "Ingin upgrade audio tapi budget terbatas",
+          "mcp_description": "Customer mau upgrade sistem audio tapi perlu dilakukan bertahap sesuai budget.",
+          "vector_score": 0.49681952614667946,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.2980917156880077,
+          "vector_rank": 3,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "4dcf193c-d484-4fe4-9814-73d5823bf132",
+          "mcp_problem_title": "Butuh audio yang cocok untuk keluarga dan anak-anak",
+          "mcp_description": "Customer butuh sistem audio yang aman untuk anak-anak, volume bisa dibatasi, dan ada fitur entertainment seperti layar untuk video.",
+          "vector_score": 0.49082461054178506,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.29449476632507104,
+          "vector_rank": 4,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "0745ed72-7722-4991-96a2-33948e00631f",
+          "mcp_problem_title": "Speaker bawaan mobil jelek, mau ganti",
+          "mcp_description": "Speaker original pabrik terasa flat dan tidak bertenaga. Customer ingin upgrade langsung terasa.",
+          "vector_score": 0.4820903837680851,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.28925423026085106,
+          "vector_rank": 5,
+          "bm25_rank": null
+        }
+      ]
+    },
+    {
+      "query_id": "K06",
+      "kategori": "Kompatibilitas Komponen",
+      "query_text": "perbedaan RCA output 4V dan 2V pada head unit untuk amplifier",
+      "embedding_available": true,
+      "retrieved_problems": [
+        {
+          "mcp_id": "4fe8ab59-0f18-411b-8d75-9c5c746e57fd",
+          "mcp_problem_title": "Suara pecah dan distorsi di volume tinggi",
+          "mcp_description": "Speaker mengalami distorsi saat volume dinaikkan. Suara tidak bersih dan pecah.",
+          "vector_score": 0.44744083598609463,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.26846450159165675,
+          "vector_rank": 1,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "6451ad6c-a60b-4a92-91d8-73b020d802e1",
+          "mcp_problem_title": "Ingin upgrade dari single DIN ke double DIN",
+          "mcp_description": "Customer punya mobil dengan head unit single DIN lama dan ingin upgrade ke double DIN dengan layar lebih besar dan fitur modern.",
+          "vector_score": 0.42863183362863466,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.25717910017718076,
+          "vector_rank": 2,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "d71440dd-5d04-4bf2-a4ca-c630d21063cc",
+          "mcp_problem_title": "Vocal dan mid range kurang jelas",
+          "mcp_description": "Suara vocal penyanyi tidak terdengar jelas, tertutup bass atau musik. Mid range terasa tipis.",
+          "vector_score": 0.42660358985641744,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.25596215391385047,
+          "vector_rank": 3,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "43e3985c-fbf1-43c1-bb95-14f57024ab54",
+          "mcp_problem_title": "Ingin install audio tapi tidak mau potong kabel",
+          "mcp_description": "Customer ingin upgrade audio mobil tetapi tidak mau merusak kabel original pabrik. Ingin instalasi yang reversible dan rapi.",
+          "vector_score": 0.4095691902215919,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.2457415141329551,
+          "vector_rank": 4,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "1c534f23-d636-41ca-9719-ee9493bf70ad",
+          "mcp_problem_title": "Bass kurang bertenaga",
+          "mcp_description": "Suara bass terasa tipis dan tidak menggetarkan, customer ingin bass yang lebih powerful untuk musik EDM, hip-hop, dan reggae.",
+          "vector_score": 0.4045594696306709,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.24273568177840255,
+          "vector_rank": 5,
+          "bm25_rank": null
+        }
+      ]
+    },
+    {
+      "query_id": "K07",
+      "kategori": "Kompatibilitas Komponen",
+      "query_text": "cara memilih crossover yang tepat untuk speaker component 2 way",
+      "embedding_available": true,
+      "retrieved_problems": [
+        {
+          "mcp_id": "43e3985c-fbf1-43c1-bb95-14f57024ab54",
+          "mcp_problem_title": "Ingin install audio tapi tidak mau potong kabel",
+          "mcp_description": "Customer ingin upgrade audio mobil tetapi tidak mau merusak kabel original pabrik. Ingin instalasi yang reversible dan rapi.",
+          "vector_score": 0.4572392157031333,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.27434352942187995,
+          "vector_rank": 1,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "4dcf193c-d484-4fe4-9814-73d5823bf132",
+          "mcp_problem_title": "Butuh audio yang cocok untuk keluarga dan anak-anak",
+          "mcp_description": "Customer butuh sistem audio yang aman untuk anak-anak, volume bisa dibatasi, dan ada fitur entertainment seperti layar untuk video.",
+          "vector_score": 0.45659997541904485,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.2739599852514269,
+          "vector_rank": 2,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "55a2ab16-143c-466d-903a-08b454634306",
+          "mcp_problem_title": "Ingin audio lebih keras untuk kompetisi/sound pressure",
+          "mcp_description": "Customer ingin sistem audio yang sangat keras untuk keperluan kompetisi SPL atau sound pressure.",
+          "vector_score": 0.45154740828841144,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.27092844497304686,
+          "vector_rank": 3,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "4fe8ab59-0f18-411b-8d75-9c5c746e57fd",
+          "mcp_problem_title": "Suara pecah dan distorsi di volume tinggi",
+          "mcp_description": "Speaker mengalami distorsi saat volume dinaikkan. Suara tidak bersih dan pecah.",
+          "vector_score": 0.451254904270185,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.27075294256211097,
+          "vector_rank": 4,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "0745ed72-7722-4991-96a2-33948e00631f",
+          "mcp_problem_title": "Speaker bawaan mobil jelek, mau ganti",
+          "mcp_description": "Speaker original pabrik terasa flat dan tidak bertenaga. Customer ingin upgrade langsung terasa.",
+          "vector_score": 0.44446100791591625,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.26667660474954974,
+          "vector_rank": 5,
+          "bm25_rank": null
+        }
+      ]
+    },
+    {
+      "query_id": "K08",
+      "kategori": "Kompatibilitas Komponen",
+      "query_text": "ukuran kabel power amplifier yang direkomendasikan",
+      "embedding_available": true,
+      "retrieved_problems": [
+        {
+          "mcp_id": "43e3985c-fbf1-43c1-bb95-14f57024ab54",
+          "mcp_problem_title": "Ingin install audio tapi tidak mau potong kabel",
+          "mcp_description": "Customer ingin upgrade audio mobil tetapi tidak mau merusak kabel original pabrik. Ingin instalasi yang reversible dan rapi.",
+          "vector_score": 0.5244632021552792,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.3146779212931675,
+          "vector_rank": 1,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "55a2ab16-143c-466d-903a-08b454634306",
+          "mcp_problem_title": "Ingin audio lebih keras untuk kompetisi/sound pressure",
+          "mcp_description": "Customer ingin sistem audio yang sangat keras untuk keperluan kompetisi SPL atau sound pressure.",
+          "vector_score": 0.4749093934839611,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.28494563609037665,
+          "vector_rank": 2,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "8b507336-5b54-4035-be10-a437622a6d7a",
+          "mcp_problem_title": "Ingin upgrade audio tapi budget terbatas",
+          "mcp_description": "Customer mau upgrade sistem audio tapi perlu dilakukan bertahap sesuai budget.",
+          "vector_score": 0.4609782374488265,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.2765869424692959,
+          "vector_rank": 3,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "4dcf193c-d484-4fe4-9814-73d5823bf132",
+          "mcp_problem_title": "Butuh audio yang cocok untuk keluarga dan anak-anak",
+          "mcp_description": "Customer butuh sistem audio yang aman untuk anak-anak, volume bisa dibatasi, dan ada fitur entertainment seperti layar untuk video.",
+          "vector_score": 0.4569469366638035,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.2741681619982821,
+          "vector_rank": 4,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "6451ad6c-a60b-4a92-91d8-73b020d802e1",
+          "mcp_problem_title": "Ingin upgrade dari single DIN ke double DIN",
+          "mcp_description": "Customer punya mobil dengan head unit single DIN lama dan ingin upgrade ke double DIN dengan layar lebih besar dan fitur modern.",
+          "vector_score": 0.4494751631587939,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.26968509789527634,
+          "vector_rank": 5,
+          "bm25_rank": null
+        }
+      ]
+    },
+    {
+      "query_id": "P01",
+      "kategori": "Produk Spesifik",
+      "query_text": "pioneer DEH-S6250BT head unit",
+      "embedding_available": true,
+      "retrieved_problems": [
+        {
+          "mcp_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+          "mcp_problem_title": "Head Unit tidak bisa connect Bluetooth",
+          "mcp_description": "Bluetooth di Head Unit tidak terdeteksi oleh HP atau sering putus-putus.",
+          "vector_score": 0.43576768956493894,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.26146061373896334,
+          "vector_rank": 1,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "6451ad6c-a60b-4a92-91d8-73b020d802e1",
+          "mcp_problem_title": "Ingin upgrade dari single DIN ke double DIN",
+          "mcp_description": "Customer punya mobil dengan head unit single DIN lama dan ingin upgrade ke double DIN dengan layar lebih besar dan fitur modern.",
+          "vector_score": 0.43292006541135164,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.25975203924681095,
+          "vector_rank": 2,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "55a2ab16-143c-466d-903a-08b454634306",
+          "mcp_problem_title": "Ingin audio lebih keras untuk kompetisi/sound pressure",
+          "mcp_description": "Customer ingin sistem audio yang sangat keras untuk keperluan kompetisi SPL atau sound pressure.",
+          "vector_score": 0.41316851652204745,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.24790110991322845,
+          "vector_rank": 3,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "4dcf193c-d484-4fe4-9814-73d5823bf132",
+          "mcp_problem_title": "Butuh audio yang cocok untuk keluarga dan anak-anak",
+          "mcp_description": "Customer butuh sistem audio yang aman untuk anak-anak, volume bisa dibatasi, dan ada fitur entertainment seperti layar untuk video.",
+          "vector_score": 0.3972330028006825,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.2383398016804095,
+          "vector_rank": 4,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "8e2c0b60-4f07-4cd5-91ef-5bb2a59709b2",
+          "mcp_problem_title": "Build sistem audio baru dari nol",
+          "mcp_description": "Customer baru beli mobil dan mau langsung build sistem audio yang lengkap dan bagus.",
+          "vector_score": 0.38917817843698066,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.23350690706218838,
+          "vector_rank": 5,
+          "bm25_rank": null
+        }
+      ]
+    },
+    {
+      "query_id": "P02",
+      "kategori": "Produk Spesifik",
+      "query_text": "kenwood KDC-BT560U spesifikasi dan harga",
+      "embedding_available": true,
+      "retrieved_problems": [
+        {
+          "mcp_id": "6451ad6c-a60b-4a92-91d8-73b020d802e1",
+          "mcp_problem_title": "Ingin upgrade dari single DIN ke double DIN",
+          "mcp_description": "Customer punya mobil dengan head unit single DIN lama dan ingin upgrade ke double DIN dengan layar lebih besar dan fitur modern.",
+          "vector_score": 0.3982821167539352,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.23896927005236113,
+          "vector_rank": 1,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "4dcf193c-d484-4fe4-9814-73d5823bf132",
+          "mcp_problem_title": "Butuh audio yang cocok untuk keluarga dan anak-anak",
+          "mcp_description": "Customer butuh sistem audio yang aman untuk anak-anak, volume bisa dibatasi, dan ada fitur entertainment seperti layar untuk video.",
+          "vector_score": 0.39230467172805694,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.23538280303683415,
+          "vector_rank": 2,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "55a2ab16-143c-466d-903a-08b454634306",
+          "mcp_problem_title": "Ingin audio lebih keras untuk kompetisi/sound pressure",
+          "mcp_description": "Customer ingin sistem audio yang sangat keras untuk keperluan kompetisi SPL atau sound pressure.",
+          "vector_score": 0.38334722717437697,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.23000833630462617,
+          "vector_rank": 3,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "0745ed72-7722-4991-96a2-33948e00631f",
+          "mcp_problem_title": "Speaker bawaan mobil jelek, mau ganti",
+          "mcp_description": "Speaker original pabrik terasa flat dan tidak bertenaga. Customer ingin upgrade langsung terasa.",
+          "vector_score": 0.37720126645558083,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.2263207598733485,
+          "vector_rank": 4,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "1c534f23-d636-41ca-9719-ee9493bf70ad",
+          "mcp_problem_title": "Bass kurang bertenaga",
+          "mcp_description": "Suara bass terasa tipis dan tidak menggetarkan, customer ingin bass yang lebih powerful untuk musik EDM, hip-hop, dan reggae.",
+          "vector_score": 0.37660774201681957,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.22596464521009174,
+          "vector_rank": 5,
+          "bm25_rank": null
+        }
+      ]
+    },
+    {
+      "query_id": "P03",
+      "kategori": "Produk Spesifik",
+      "query_text": "nakamichi na3605 fitur dan keunggulan",
+      "embedding_available": true,
+      "retrieved_problems": [
+        {
+          "mcp_id": "8e2c0b60-4f07-4cd5-91ef-5bb2a59709b2",
+          "mcp_problem_title": "Build sistem audio baru dari nol",
+          "mcp_description": "Customer baru beli mobil dan mau langsung build sistem audio yang lengkap dan bagus.",
+          "vector_score": 0.3064689727565342,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.1838813836539205,
+          "vector_rank": 1,
+          "bm25_rank": null
+        }
+      ]
+    },
+    {
+      "query_id": "P04",
+      "kategori": "Produk Spesifik",
+      "query_text": "hertz dieci speaker component DCX 165.3",
+      "embedding_available": true,
+      "retrieved_problems": [
+        {
+          "mcp_id": "4fe8ab59-0f18-411b-8d75-9c5c746e57fd",
+          "mcp_problem_title": "Suara pecah dan distorsi di volume tinggi",
+          "mcp_description": "Speaker mengalami distorsi saat volume dinaikkan. Suara tidak bersih dan pecah.",
+          "vector_score": 0.43899430298941067,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.2633965817936464,
+          "vector_rank": 1,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "0745ed72-7722-4991-96a2-33948e00631f",
+          "mcp_problem_title": "Speaker bawaan mobil jelek, mau ganti",
+          "mcp_description": "Speaker original pabrik terasa flat dan tidak bertenaga. Customer ingin upgrade langsung terasa.",
+          "vector_score": 0.3999708652513767,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.23998251915082602,
+          "vector_rank": 2,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "55a2ab16-143c-466d-903a-08b454634306",
+          "mcp_problem_title": "Ingin audio lebih keras untuk kompetisi/sound pressure",
+          "mcp_description": "Customer ingin sistem audio yang sangat keras untuk keperluan kompetisi SPL atau sound pressure.",
+          "vector_score": 0.3854928749212203,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.23129572495273218,
+          "vector_rank": 3,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "bad8f281-a1ff-4abe-8238-89365e95e58d",
+          "mcp_problem_title": "Soundstage sempit, suara terasa datar",
+          "mcp_description": "Posisi suara terasa menyatu dan tidak ada kedalaman. Tidak terasa seperti live performance.",
+          "vector_score": 0.385264155801736,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.2311584934810416,
+          "vector_rank": 4,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "1c534f23-d636-41ca-9719-ee9493bf70ad",
+          "mcp_problem_title": "Bass kurang bertenaga",
+          "mcp_description": "Suara bass terasa tipis dan tidak menggetarkan, customer ingin bass yang lebih powerful untuk musik EDM, hip-hop, dan reggae.",
+          "vector_score": 0.37983291925494034,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.22789975155296419,
+          "vector_rank": 5,
+          "bm25_rank": null
+        }
+      ]
+    },
+    {
+      "query_id": "P05",
+      "kategori": "Produk Spesifik",
+      "query_text": "JVC KD-X371BT head unit bluetooth",
+      "embedding_available": true,
+      "retrieved_problems": [
+        {
+          "mcp_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+          "mcp_problem_title": "Head Unit tidak bisa connect Bluetooth",
+          "mcp_description": "Bluetooth di Head Unit tidak terdeteksi oleh HP atau sering putus-putus.",
+          "vector_score": 0.5160873820729707,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.3096524292437824,
+          "vector_rank": 1,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "4dcf193c-d484-4fe4-9814-73d5823bf132",
+          "mcp_problem_title": "Butuh audio yang cocok untuk keluarga dan anak-anak",
+          "mcp_description": "Customer butuh sistem audio yang aman untuk anak-anak, volume bisa dibatasi, dan ada fitur entertainment seperti layar untuk video.",
+          "vector_score": 0.41590547060403127,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.24954328236241874,
+          "vector_rank": 2,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "43e3985c-fbf1-43c1-bb95-14f57024ab54",
+          "mcp_problem_title": "Ingin install audio tapi tidak mau potong kabel",
+          "mcp_description": "Customer ingin upgrade audio mobil tetapi tidak mau merusak kabel original pabrik. Ingin instalasi yang reversible dan rapi.",
+          "vector_score": 0.401441979150436,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.2408651874902616,
+          "vector_rank": 3,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "8e2c0b60-4f07-4cd5-91ef-5bb2a59709b2",
+          "mcp_problem_title": "Build sistem audio baru dari nol",
+          "mcp_description": "Customer baru beli mobil dan mau langsung build sistem audio yang lengkap dan bagus.",
+          "vector_score": 0.3903959924218656,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.23423759545311937,
+          "vector_rank": 4,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "1c534f23-d636-41ca-9719-ee9493bf70ad",
+          "mcp_problem_title": "Bass kurang bertenaga",
+          "mcp_description": "Suara bass terasa tipis dan tidak menggetarkan, customer ingin bass yang lebih powerful untuk musik EDM, hip-hop, dan reggae.",
+          "vector_score": 0.3899041762862365,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.23394250577174192,
+          "vector_rank": 5,
+          "bm25_rank": null
+        }
+      ]
+    },
+    {
+      "query_id": "P06",
+      "kategori": "Produk Spesifik",
+      "query_text": "subwoofer rockford fosgate punch p3",
+      "embedding_available": true,
+      "retrieved_problems": [
+        {
+          "mcp_id": "55a2ab16-143c-466d-903a-08b454634306",
+          "mcp_problem_title": "Ingin audio lebih keras untuk kompetisi/sound pressure",
+          "mcp_description": "Customer ingin sistem audio yang sangat keras untuk keperluan kompetisi SPL atau sound pressure.",
+          "vector_score": 0.4233546555042267,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.254012793302536,
+          "vector_rank": 1,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "1c534f23-d636-41ca-9719-ee9493bf70ad",
+          "mcp_problem_title": "Bass kurang bertenaga",
+          "mcp_description": "Suara bass terasa tipis dan tidak menggetarkan, customer ingin bass yang lebih powerful untuk musik EDM, hip-hop, dan reggae.",
+          "vector_score": 0.41449017567903346,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.24869410540742007,
+          "vector_rank": 2,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "4fe8ab59-0f18-411b-8d75-9c5c746e57fd",
+          "mcp_problem_title": "Suara pecah dan distorsi di volume tinggi",
+          "mcp_description": "Speaker mengalami distorsi saat volume dinaikkan. Suara tidak bersih dan pecah.",
+          "vector_score": 0.4034198935723461,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.24205193614340764,
+          "vector_rank": 3,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "0745ed72-7722-4991-96a2-33948e00631f",
+          "mcp_problem_title": "Speaker bawaan mobil jelek, mau ganti",
+          "mcp_description": "Speaker original pabrik terasa flat dan tidak bertenaga. Customer ingin upgrade langsung terasa.",
+          "vector_score": 0.38727413936103283,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.23236448361661968,
+          "vector_rank": 4,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "d9628a75-45ec-46ec-8229-213eed57dbf7",
+          "mcp_problem_title": "Ingin bass yang dalam tapi tidak berisik ke luar",
+          "mcp_description": "Customer ingin bass yang kuat di dalam kabin tetapi tidak mengganggu orang sekitar atau tetangga saat malam hari. Tidak ingin \"bocor\" ke luar.",
+          "vector_score": 0.3852123984567888,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.23112743907407327,
+          "vector_rank": 5,
+          "bm25_rank": null
+        }
+      ]
+    },
+    {
+      "query_id": "P07",
+      "kategori": "Produk Spesifik",
+      "query_text": "tweeter JL Audio C1 075ct",
+      "embedding_available": true,
+      "retrieved_problems": [
+        {
+          "mcp_id": "0745ed72-7722-4991-96a2-33948e00631f",
+          "mcp_problem_title": "Speaker bawaan mobil jelek, mau ganti",
+          "mcp_description": "Speaker original pabrik terasa flat dan tidak bertenaga. Customer ingin upgrade langsung terasa.",
+          "vector_score": 0.3954190008966627,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.23725140053799762,
+          "vector_rank": 1,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "bad8f281-a1ff-4abe-8238-89365e95e58d",
+          "mcp_problem_title": "Soundstage sempit, suara terasa datar",
+          "mcp_description": "Posisi suara terasa menyatu dan tidak ada kedalaman. Tidak terasa seperti live performance.",
+          "vector_score": 0.39189802432365006,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.23513881459419003,
+          "vector_rank": 2,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "d71440dd-5d04-4bf2-a4ca-c630d21063cc",
+          "mcp_problem_title": "Vocal dan mid range kurang jelas",
+          "mcp_description": "Suara vocal penyanyi tidak terdengar jelas, tertutup bass atau musik. Mid range terasa tipis.",
+          "vector_score": 0.380323070874131,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.22819384252447858,
+          "vector_rank": 3,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "4fe8ab59-0f18-411b-8d75-9c5c746e57fd",
+          "mcp_problem_title": "Suara pecah dan distorsi di volume tinggi",
+          "mcp_description": "Speaker mengalami distorsi saat volume dinaikkan. Suara tidak bersih dan pecah.",
+          "vector_score": 0.35919319512865155,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.21551591707719092,
+          "vector_rank": 4,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "43e3985c-fbf1-43c1-bb95-14f57024ab54",
+          "mcp_problem_title": "Ingin install audio tapi tidak mau potong kabel",
+          "mcp_description": "Customer ingin upgrade audio mobil tetapi tidak mau merusak kabel original pabrik. Ingin instalasi yang reversible dan rapi.",
+          "vector_score": 0.3515620601829985,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.21093723610979911,
+          "vector_rank": 5,
+          "bm25_rank": null
+        }
+      ]
+    },
+    {
+      "query_id": "C01",
+      "kategori": "Konseptual dan Edukatif",
+      "query_text": "apa fungsi head unit di sistem audio mobil?",
+      "embedding_available": true,
+      "retrieved_problems": [
+        {
+          "mcp_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+          "mcp_problem_title": "Head Unit tidak bisa connect Bluetooth",
+          "mcp_description": "Bluetooth di Head Unit tidak terdeteksi oleh HP atau sering putus-putus.",
+          "vector_score": 0.6113094554770685,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.36678567328624107,
+          "vector_rank": 1,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "6451ad6c-a60b-4a92-91d8-73b020d802e1",
+          "mcp_problem_title": "Ingin upgrade dari single DIN ke double DIN",
+          "mcp_description": "Customer punya mobil dengan head unit single DIN lama dan ingin upgrade ke double DIN dengan layar lebih besar dan fitur modern.",
+          "vector_score": 0.5808965910015469,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.3485379546009281,
+          "vector_rank": 2,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "1e0f54ab-acb2-44be-86dd-15b20dd66f1c",
+          "mcp_problem_title": "Audio sering mati atau trouble dalam panas",
+          "mcp_description": "Sistem audio mobil sering mati sendiri atau trouble saat cuaca panas. Amplifier overheat. Head unit restart sendiri.",
+          "vector_score": 0.563705325126648,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.33822319507598875,
+          "vector_rank": 3,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "4dcf193c-d484-4fe4-9814-73d5823bf132",
+          "mcp_problem_title": "Butuh audio yang cocok untuk keluarga dan anak-anak",
+          "mcp_description": "Customer butuh sistem audio yang aman untuk anak-anak, volume bisa dibatasi, dan ada fitur entertainment seperti layar untuk video.",
+          "vector_score": 0.5518710017204285,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.33112260103225705,
+          "vector_rank": 4,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "8e2c0b60-4f07-4cd5-91ef-5bb2a59709b2",
+          "mcp_problem_title": "Build sistem audio baru dari nol",
+          "mcp_description": "Customer baru beli mobil dan mau langsung build sistem audio yang lengkap dan bagus.",
+          "vector_score": 0.5499444007873535,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.3299666404724121,
+          "vector_rank": 5,
+          "bm25_rank": null
+        }
+      ]
+    },
+    {
+      "query_id": "C02",
+      "kategori": "Konseptual dan Edukatif",
+      "query_text": "perbedaan speaker coaxial dan speaker component",
+      "embedding_available": true,
+      "retrieved_problems": [
+        {
+          "mcp_id": "4fe8ab59-0f18-411b-8d75-9c5c746e57fd",
+          "mcp_problem_title": "Suara pecah dan distorsi di volume tinggi",
+          "mcp_description": "Speaker mengalami distorsi saat volume dinaikkan. Suara tidak bersih dan pecah.",
+          "vector_score": 0.4776640574340726,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.28659843446044353,
+          "vector_rank": 1,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "0745ed72-7722-4991-96a2-33948e00631f",
+          "mcp_problem_title": "Speaker bawaan mobil jelek, mau ganti",
+          "mcp_description": "Speaker original pabrik terasa flat dan tidak bertenaga. Customer ingin upgrade langsung terasa.",
+          "vector_score": 0.4428431987762482,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.26570591926574894,
+          "vector_rank": 2,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "43e3985c-fbf1-43c1-bb95-14f57024ab54",
+          "mcp_problem_title": "Ingin install audio tapi tidak mau potong kabel",
+          "mcp_description": "Customer ingin upgrade audio mobil tetapi tidak mau merusak kabel original pabrik. Ingin instalasi yang reversible dan rapi.",
+          "vector_score": 0.4122299515515776,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.24733797093094656,
+          "vector_rank": 3,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "d71440dd-5d04-4bf2-a4ca-c630d21063cc",
+          "mcp_problem_title": "Vocal dan mid range kurang jelas",
+          "mcp_description": "Suara vocal penyanyi tidak terdengar jelas, tertutup bass atau musik. Mid range terasa tipis.",
+          "vector_score": 0.4007294653541813,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.24043767921250878,
+          "vector_rank": 4,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "bad8f281-a1ff-4abe-8238-89365e95e58d",
+          "mcp_problem_title": "Soundstage sempit, suara terasa datar",
+          "mcp_description": "Posisi suara terasa menyatu dan tidak ada kedalaman. Tidak terasa seperti live performance.",
+          "vector_score": 0.3927506102173437,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.2356503661304062,
+          "vector_rank": 5,
+          "bm25_rank": null
+        }
+      ]
+    },
+    {
+      "query_id": "C03",
+      "kategori": "Konseptual dan Edukatif",
+      "query_text": "kenapa bass mobil tidak terasa nendang padahal sudah pasang subwoofer?",
+      "embedding_available": true,
+      "retrieved_problems": [
+        {
+          "mcp_id": "1c534f23-d636-41ca-9719-ee9493bf70ad",
+          "mcp_problem_title": "Bass kurang bertenaga",
+          "mcp_description": "Suara bass terasa tipis dan tidak menggetarkan, customer ingin bass yang lebih powerful untuk musik EDM, hip-hop, dan reggae.",
+          "vector_score": 0.5613302755752291,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.33679816534513746,
+          "vector_rank": 1,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "bad8f281-a1ff-4abe-8238-89365e95e58d",
+          "mcp_problem_title": "Soundstage sempit, suara terasa datar",
+          "mcp_description": "Posisi suara terasa menyatu dan tidak ada kedalaman. Tidak terasa seperti live performance.",
+          "vector_score": 0.5385802342200038,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.32314814053200225,
+          "vector_rank": 2,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "d71440dd-5d04-4bf2-a4ca-c630d21063cc",
+          "mcp_problem_title": "Vocal dan mid range kurang jelas",
+          "mcp_description": "Suara vocal penyanyi tidak terdengar jelas, tertutup bass atau musik. Mid range terasa tipis.",
+          "vector_score": 0.5115439878053716,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.3069263926832229,
+          "vector_rank": 3,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "0745ed72-7722-4991-96a2-33948e00631f",
+          "mcp_problem_title": "Speaker bawaan mobil jelek, mau ganti",
+          "mcp_description": "Speaker original pabrik terasa flat dan tidak bertenaga. Customer ingin upgrade langsung terasa.",
+          "vector_score": 0.5107718414528285,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.3064631048716971,
+          "vector_rank": 4,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "d9628a75-45ec-46ec-8229-213eed57dbf7",
+          "mcp_problem_title": "Ingin bass yang dalam tapi tidak berisik ke luar",
+          "mcp_description": "Customer ingin bass yang kuat di dalam kabin tetapi tidak mengganggu orang sekitar atau tetangga saat malam hari. Tidak ingin \"bocor\" ke luar.",
+          "vector_score": 0.5095103079372469,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.3057061847623482,
+          "vector_rank": 5,
+          "bm25_rank": null
+        }
+      ]
+    },
+    {
+      "query_id": "C04",
+      "kategori": "Konseptual dan Edukatif",
+      "query_text": "bagaimana cara upgrade audio mobil untuk pemula dengan budget terbatas?",
+      "embedding_available": true,
+      "retrieved_problems": [
+        {
+          "mcp_id": "8b507336-5b54-4035-be10-a437622a6d7a",
+          "mcp_problem_title": "Ingin upgrade audio tapi budget terbatas",
+          "mcp_description": "Customer mau upgrade sistem audio tapi perlu dilakukan bertahap sesuai budget.",
+          "vector_score": 0.5981539966876553,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.3588923980125932,
+          "vector_rank": 1,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "8e2c0b60-4f07-4cd5-91ef-5bb2a59709b2",
+          "mcp_problem_title": "Build sistem audio baru dari nol",
+          "mcp_description": "Customer baru beli mobil dan mau langsung build sistem audio yang lengkap dan bagus.",
+          "vector_score": 0.5963348035413303,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.35780088212479816,
+          "vector_rank": 2,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "43e3985c-fbf1-43c1-bb95-14f57024ab54",
+          "mcp_problem_title": "Ingin install audio tapi tidak mau potong kabel",
+          "mcp_description": "Customer ingin upgrade audio mobil tetapi tidak mau merusak kabel original pabrik. Ingin instalasi yang reversible dan rapi.",
+          "vector_score": 0.5753484694903643,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.3452090816942186,
+          "vector_rank": 3,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "0745ed72-7722-4991-96a2-33948e00631f",
+          "mcp_problem_title": "Speaker bawaan mobil jelek, mau ganti",
+          "mcp_description": "Speaker original pabrik terasa flat dan tidak bertenaga. Customer ingin upgrade langsung terasa.",
+          "vector_score": 0.5398521101562997,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.32391126609377985,
+          "vector_rank": 4,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "6451ad6c-a60b-4a92-91d8-73b020d802e1",
+          "mcp_problem_title": "Ingin upgrade dari single DIN ke double DIN",
+          "mcp_description": "Customer punya mobil dengan head unit single DIN lama dan ingin upgrade ke double DIN dengan layar lebih besar dan fitur modern.",
+          "vector_score": 0.5048824247788019,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.3029294548672811,
+          "vector_rank": 5,
+          "bm25_rank": null
+        }
+      ]
+    },
+    {
+      "query_id": "C05",
+      "kategori": "Konseptual dan Edukatif",
+      "query_text": "apa itu DSP digital signal processor dalam audio mobil?",
+      "embedding_available": true,
+      "retrieved_problems": [
+        {
+          "mcp_id": "8e2c0b60-4f07-4cd5-91ef-5bb2a59709b2",
+          "mcp_problem_title": "Build sistem audio baru dari nol",
+          "mcp_description": "Customer baru beli mobil dan mau langsung build sistem audio yang lengkap dan bagus.",
+          "vector_score": 0.5188265156046469,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.3112959093627881,
+          "vector_rank": 1,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "6451ad6c-a60b-4a92-91d8-73b020d802e1",
+          "mcp_problem_title": "Ingin upgrade dari single DIN ke double DIN",
+          "mcp_description": "Customer punya mobil dengan head unit single DIN lama dan ingin upgrade ke double DIN dengan layar lebih besar dan fitur modern.",
+          "vector_score": 0.5182676933130852,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.31096061598785113,
+          "vector_rank": 2,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "4fe8ab59-0f18-411b-8d75-9c5c746e57fd",
+          "mcp_problem_title": "Suara pecah dan distorsi di volume tinggi",
+          "mcp_description": "Speaker mengalami distorsi saat volume dinaikkan. Suara tidak bersih dan pecah.",
+          "vector_score": 0.5114670090993123,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.3068802054595874,
+          "vector_rank": 3,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "55a2ab16-143c-466d-903a-08b454634306",
+          "mcp_problem_title": "Ingin audio lebih keras untuk kompetisi/sound pressure",
+          "mcp_description": "Customer ingin sistem audio yang sangat keras untuk keperluan kompetisi SPL atau sound pressure.",
+          "vector_score": 0.5081596677398492,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.30489580064390953,
+          "vector_rank": 4,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "1e0f54ab-acb2-44be-86dd-15b20dd66f1c",
+          "mcp_problem_title": "Audio sering mati atau trouble dalam panas",
+          "mcp_description": "Sistem audio mobil sering mati sendiri atau trouble saat cuaca panas. Amplifier overheat. Head unit restart sendiri.",
+          "vector_score": 0.49911436433281775,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.29946861859969065,
+          "vector_rank": 5,
+          "bm25_rank": null
+        }
+      ]
+    },
+    {
+      "query_id": "C06",
+      "kategori": "Konseptual dan Edukatif",
+      "query_text": "perbedaan subwoofer sealed box dan ported box untuk kualitas bass",
+      "embedding_available": true,
+      "retrieved_problems": [
+        {
+          "mcp_id": "1c534f23-d636-41ca-9719-ee9493bf70ad",
+          "mcp_problem_title": "Bass kurang bertenaga",
+          "mcp_description": "Suara bass terasa tipis dan tidak menggetarkan, customer ingin bass yang lebih powerful untuk musik EDM, hip-hop, dan reggae.",
+          "vector_score": 0.5069234522260266,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.30415407133561595,
+          "vector_rank": 1,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "bad8f281-a1ff-4abe-8238-89365e95e58d",
+          "mcp_problem_title": "Soundstage sempit, suara terasa datar",
+          "mcp_description": "Posisi suara terasa menyatu dan tidak ada kedalaman. Tidak terasa seperti live performance.",
+          "vector_score": 0.4992381335213061,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.2995428801127836,
+          "vector_rank": 2,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "4fe8ab59-0f18-411b-8d75-9c5c746e57fd",
+          "mcp_problem_title": "Suara pecah dan distorsi di volume tinggi",
+          "mcp_description": "Speaker mengalami distorsi saat volume dinaikkan. Suara tidak bersih dan pecah.",
+          "vector_score": 0.4972636106892132,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.2983581664135279,
+          "vector_rank": 3,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "d9628a75-45ec-46ec-8229-213eed57dbf7",
+          "mcp_problem_title": "Ingin bass yang dalam tapi tidak berisik ke luar",
+          "mcp_description": "Customer ingin bass yang kuat di dalam kabin tetapi tidak mengganggu orang sekitar atau tetangga saat malam hari. Tidak ingin \"bocor\" ke luar.",
+          "vector_score": 0.48043134925178677,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.288258809551072,
+          "vector_rank": 4,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "55a2ab16-143c-466d-903a-08b454634306",
+          "mcp_problem_title": "Ingin audio lebih keras untuk kompetisi/sound pressure",
+          "mcp_description": "Customer ingin sistem audio yang sangat keras untuk keperluan kompetisi SPL atau sound pressure.",
+          "vector_score": 0.46295464038848877,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.27777278423309326,
+          "vector_rank": 5,
+          "bm25_rank": null
+        }
+      ]
+    },
+    {
+      "query_id": "C07",
+      "kategori": "Konseptual dan Edukatif",
+      "query_text": "cara menghilangkan noise suara dengung di audio mobil",
+      "embedding_available": true,
+      "retrieved_problems": [
+        {
+          "mcp_id": "4fe8ab59-0f18-411b-8d75-9c5c746e57fd",
+          "mcp_problem_title": "Suara pecah dan distorsi di volume tinggi",
+          "mcp_description": "Speaker mengalami distorsi saat volume dinaikkan. Suara tidak bersih dan pecah.",
+          "vector_score": 0.6029847860336475,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.36179087162018847,
+          "vector_rank": 1,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "0745ed72-7722-4991-96a2-33948e00631f",
+          "mcp_problem_title": "Speaker bawaan mobil jelek, mau ganti",
+          "mcp_description": "Speaker original pabrik terasa flat dan tidak bertenaga. Customer ingin upgrade langsung terasa.",
+          "vector_score": 0.5955582133933698,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.35733492803602185,
+          "vector_rank": 2,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "1e0f54ab-acb2-44be-86dd-15b20dd66f1c",
+          "mcp_problem_title": "Audio sering mati atau trouble dalam panas",
+          "mcp_description": "Sistem audio mobil sering mati sendiri atau trouble saat cuaca panas. Amplifier overheat. Head unit restart sendiri.",
+          "vector_score": 0.5734856812340874,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.3440914087404524,
+          "vector_rank": 3,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "43e3985c-fbf1-43c1-bb95-14f57024ab54",
+          "mcp_problem_title": "Ingin install audio tapi tidak mau potong kabel",
+          "mcp_description": "Customer ingin upgrade audio mobil tetapi tidak mau merusak kabel original pabrik. Ingin instalasi yang reversible dan rapi.",
+          "vector_score": 0.5617214963768488,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.33703289782610923,
+          "vector_rank": 4,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "55a2ab16-143c-466d-903a-08b454634306",
+          "mcp_problem_title": "Ingin audio lebih keras untuk kompetisi/sound pressure",
+          "mcp_description": "Customer ingin sistem audio yang sangat keras untuk keperluan kompetisi SPL atau sound pressure.",
+          "vector_score": 0.5404667306502775,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.3242800383901665,
+          "vector_rank": 5,
+          "bm25_rank": null
+        }
+      ]
+    },
+    {
+      "query_id": "C08",
+      "kategori": "Konseptual dan Edukatif",
+      "query_text": "mengapa suara speaker mobil pecah distorsi saat volume tinggi?",
+      "embedding_available": true,
+      "retrieved_problems": [
+        {
+          "mcp_id": "4fe8ab59-0f18-411b-8d75-9c5c746e57fd",
+          "mcp_problem_title": "Suara pecah dan distorsi di volume tinggi",
+          "mcp_description": "Speaker mengalami distorsi saat volume dinaikkan. Suara tidak bersih dan pecah.",
+          "vector_score": 0.7091313697978568,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.4254788218787141,
+          "vector_rank": 1,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "0745ed72-7722-4991-96a2-33948e00631f",
+          "mcp_problem_title": "Speaker bawaan mobil jelek, mau ganti",
+          "mcp_description": "Speaker original pabrik terasa flat dan tidak bertenaga. Customer ingin upgrade langsung terasa.",
+          "vector_score": 0.5168571164097203,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.3101142698458322,
+          "vector_rank": 2,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "1e0f54ab-acb2-44be-86dd-15b20dd66f1c",
+          "mcp_problem_title": "Audio sering mati atau trouble dalam panas",
+          "mcp_description": "Sistem audio mobil sering mati sendiri atau trouble saat cuaca panas. Amplifier overheat. Head unit restart sendiri.",
+          "vector_score": 0.5068745008856689,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.30412470053140134,
+          "vector_rank": 3,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "55a2ab16-143c-466d-903a-08b454634306",
+          "mcp_problem_title": "Ingin audio lebih keras untuk kompetisi/sound pressure",
+          "mcp_description": "Customer ingin sistem audio yang sangat keras untuk keperluan kompetisi SPL atau sound pressure.",
+          "vector_score": 0.4969047013634835,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.2981428208180901,
+          "vector_rank": 4,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "bad8f281-a1ff-4abe-8238-89365e95e58d",
+          "mcp_problem_title": "Soundstage sempit, suara terasa datar",
+          "mcp_description": "Posisi suara terasa menyatu dan tidak ada kedalaman. Tidak terasa seperti live performance.",
+          "vector_score": 0.48529160373411084,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.2911749622404665,
+          "vector_rank": 5,
+          "bm25_rank": null
+        }
+      ]
+    },
+    {
+      "query_id": "V01",
+      "kategori": "Berbasis Kendaraan",
+      "query_text": "rekomendasi upgrade audio untuk Mitsubishi Xpander",
+      "embedding_available": true,
+      "retrieved_problems": [
+        {
+          "mcp_id": "8b507336-5b54-4035-be10-a437622a6d7a",
+          "mcp_problem_title": "Ingin upgrade audio tapi budget terbatas",
+          "mcp_description": "Customer mau upgrade sistem audio tapi perlu dilakukan bertahap sesuai budget.",
+          "vector_score": 0.5721423796457764,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.34328542778746585,
+          "vector_rank": 1,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "43e3985c-fbf1-43c1-bb95-14f57024ab54",
+          "mcp_problem_title": "Ingin install audio tapi tidak mau potong kabel",
+          "mcp_description": "Customer ingin upgrade audio mobil tetapi tidak mau merusak kabel original pabrik. Ingin instalasi yang reversible dan rapi.",
+          "vector_score": 0.5559694799248669,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.3335816879549201,
+          "vector_rank": 2,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "8e2c0b60-4f07-4cd5-91ef-5bb2a59709b2",
+          "mcp_problem_title": "Build sistem audio baru dari nol",
+          "mcp_description": "Customer baru beli mobil dan mau langsung build sistem audio yang lengkap dan bagus.",
+          "vector_score": 0.5460198088294214,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.3276118852976528,
+          "vector_rank": 3,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "0745ed72-7722-4991-96a2-33948e00631f",
+          "mcp_problem_title": "Speaker bawaan mobil jelek, mau ganti",
+          "mcp_description": "Speaker original pabrik terasa flat dan tidak bertenaga. Customer ingin upgrade langsung terasa.",
+          "vector_score": 0.5413047559235774,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.32478285355414643,
+          "vector_rank": 4,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "4dcf193c-d484-4fe4-9814-73d5823bf132",
+          "mcp_problem_title": "Butuh audio yang cocok untuk keluarga dan anak-anak",
+          "mcp_description": "Customer butuh sistem audio yang aman untuk anak-anak, volume bisa dibatasi, dan ada fitur entertainment seperti layar untuk video.",
+          "vector_score": 0.5348016779065634,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.32088100674393805,
+          "vector_rank": 5,
+          "bm25_rank": null
+        }
+      ]
+    },
+    {
+      "query_id": "V02",
+      "kategori": "Berbasis Kendaraan",
+      "query_text": "speaker yang cocok untuk Honda Brio city car",
+      "embedding_available": true,
+      "retrieved_problems": [
+        {
+          "mcp_id": "0745ed72-7722-4991-96a2-33948e00631f",
+          "mcp_problem_title": "Speaker bawaan mobil jelek, mau ganti",
+          "mcp_description": "Speaker original pabrik terasa flat dan tidak bertenaga. Customer ingin upgrade langsung terasa.",
+          "vector_score": 0.5393773685772492,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.3236264211463495,
+          "vector_rank": 1,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "4dcf193c-d484-4fe4-9814-73d5823bf132",
+          "mcp_problem_title": "Butuh audio yang cocok untuk keluarga dan anak-anak",
+          "mcp_description": "Customer butuh sistem audio yang aman untuk anak-anak, volume bisa dibatasi, dan ada fitur entertainment seperti layar untuk video.",
+          "vector_score": 0.5081709037030857,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.3049025422218514,
+          "vector_rank": 2,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "d9628a75-45ec-46ec-8229-213eed57dbf7",
+          "mcp_problem_title": "Ingin bass yang dalam tapi tidak berisik ke luar",
+          "mcp_description": "Customer ingin bass yang kuat di dalam kabin tetapi tidak mengganggu orang sekitar atau tetangga saat malam hari. Tidak ingin \"bocor\" ke luar.",
+          "vector_score": 0.5018884242706632,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.30113305456239786,
+          "vector_rank": 3,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "8e2c0b60-4f07-4cd5-91ef-5bb2a59709b2",
+          "mcp_problem_title": "Build sistem audio baru dari nol",
+          "mcp_description": "Customer baru beli mobil dan mau langsung build sistem audio yang lengkap dan bagus.",
+          "vector_score": 0.4985176919123795,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.2991106151474277,
+          "vector_rank": 4,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "43e3985c-fbf1-43c1-bb95-14f57024ab54",
+          "mcp_problem_title": "Ingin install audio tapi tidak mau potong kabel",
+          "mcp_description": "Customer ingin upgrade audio mobil tetapi tidak mau merusak kabel original pabrik. Ingin instalasi yang reversible dan rapi.",
+          "vector_score": 0.4928037830825426,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.29568226984952556,
+          "vector_rank": 5,
+          "bm25_rank": null
+        }
+      ]
+    },
+    {
+      "query_id": "V03",
+      "kategori": "Berbasis Kendaraan",
+      "query_text": "subwoofer terbaik untuk Toyota Avanza MPV",
+      "embedding_available": true,
+      "retrieved_problems": [
+        {
+          "mcp_id": "0745ed72-7722-4991-96a2-33948e00631f",
+          "mcp_problem_title": "Speaker bawaan mobil jelek, mau ganti",
+          "mcp_description": "Speaker original pabrik terasa flat dan tidak bertenaga. Customer ingin upgrade langsung terasa.",
+          "vector_score": 0.557207465171818,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.33432447910309077,
+          "vector_rank": 1,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "55a2ab16-143c-466d-903a-08b454634306",
+          "mcp_problem_title": "Ingin audio lebih keras untuk kompetisi/sound pressure",
+          "mcp_description": "Customer ingin sistem audio yang sangat keras untuk keperluan kompetisi SPL atau sound pressure.",
+          "vector_score": 0.5313149373939681,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.31878896243638083,
+          "vector_rank": 2,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "1c534f23-d636-41ca-9719-ee9493bf70ad",
+          "mcp_problem_title": "Bass kurang bertenaga",
+          "mcp_description": "Suara bass terasa tipis dan tidak menggetarkan, customer ingin bass yang lebih powerful untuk musik EDM, hip-hop, dan reggae.",
+          "vector_score": 0.5270564995093218,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.31623389970559307,
+          "vector_rank": 3,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "4dcf193c-d484-4fe4-9814-73d5823bf132",
+          "mcp_problem_title": "Butuh audio yang cocok untuk keluarga dan anak-anak",
+          "mcp_description": "Customer butuh sistem audio yang aman untuk anak-anak, volume bisa dibatasi, dan ada fitur entertainment seperti layar untuk video.",
+          "vector_score": 0.5256222173200725,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.3153733303920435,
+          "vector_rank": 4,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "8e2c0b60-4f07-4cd5-91ef-5bb2a59709b2",
+          "mcp_problem_title": "Build sistem audio baru dari nol",
+          "mcp_description": "Customer baru beli mobil dan mau langsung build sistem audio yang lengkap dan bagus.",
+          "vector_score": 0.5200465607615384,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.31202793645692306,
+          "vector_rank": 5,
+          "bm25_rank": null
+        }
+      ]
+    },
+    {
+      "query_id": "V04",
+      "kategori": "Berbasis Kendaraan",
+      "query_text": "setup audio lengkap untuk Toyota Fortuner SUV",
+      "embedding_available": true,
+      "retrieved_problems": [
+        {
+          "mcp_id": "8e2c0b60-4f07-4cd5-91ef-5bb2a59709b2",
+          "mcp_problem_title": "Build sistem audio baru dari nol",
+          "mcp_description": "Customer baru beli mobil dan mau langsung build sistem audio yang lengkap dan bagus.",
+          "vector_score": 0.5780586004257202,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.3468351602554321,
+          "vector_rank": 1,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "43e3985c-fbf1-43c1-bb95-14f57024ab54",
+          "mcp_problem_title": "Ingin install audio tapi tidak mau potong kabel",
+          "mcp_description": "Customer ingin upgrade audio mobil tetapi tidak mau merusak kabel original pabrik. Ingin instalasi yang reversible dan rapi.",
+          "vector_score": 0.5584583739141685,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.3350750243485011,
+          "vector_rank": 2,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "4dcf193c-d484-4fe4-9814-73d5823bf132",
+          "mcp_problem_title": "Butuh audio yang cocok untuk keluarga dan anak-anak",
+          "mcp_description": "Customer butuh sistem audio yang aman untuk anak-anak, volume bisa dibatasi, dan ada fitur entertainment seperti layar untuk video.",
+          "vector_score": 0.5524852871894836,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.3314911723136902,
+          "vector_rank": 3,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "6451ad6c-a60b-4a92-91d8-73b020d802e1",
+          "mcp_problem_title": "Ingin upgrade dari single DIN ke double DIN",
+          "mcp_description": "Customer punya mobil dengan head unit single DIN lama dan ingin upgrade ke double DIN dengan layar lebih besar dan fitur modern.",
+          "vector_score": 0.5394900166684409,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.3236940100010645,
+          "vector_rank": 4,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "0745ed72-7722-4991-96a2-33948e00631f",
+          "mcp_problem_title": "Speaker bawaan mobil jelek, mau ganti",
+          "mcp_description": "Speaker original pabrik terasa flat dan tidak bertenaga. Customer ingin upgrade langsung terasa.",
+          "vector_score": 0.5380697571080788,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.3228418542648473,
+          "vector_rank": 5,
+          "bm25_rank": null
+        }
+      ]
+    },
+    {
+      "query_id": "V05",
+      "kategori": "Berbasis Kendaraan",
+      "query_text": "upgrade head unit android untuk Honda Jazz",
+      "embedding_available": true,
+      "retrieved_problems": [
+        {
+          "mcp_id": "6451ad6c-a60b-4a92-91d8-73b020d802e1",
+          "mcp_problem_title": "Ingin upgrade dari single DIN ke double DIN",
+          "mcp_description": "Customer punya mobil dengan head unit single DIN lama dan ingin upgrade ke double DIN dengan layar lebih besar dan fitur modern.",
+          "vector_score": 0.5486677019994091,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.32920062119964544,
+          "vector_rank": 1,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "0745ed72-7722-4991-96a2-33948e00631f",
+          "mcp_problem_title": "Speaker bawaan mobil jelek, mau ganti",
+          "mcp_description": "Speaker original pabrik terasa flat dan tidak bertenaga. Customer ingin upgrade langsung terasa.",
+          "vector_score": 0.5196726631923126,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.3118035979153876,
+          "vector_rank": 2,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+          "mcp_problem_title": "Head Unit tidak bisa connect Bluetooth",
+          "mcp_description": "Bluetooth di Head Unit tidak terdeteksi oleh HP atau sering putus-putus.",
+          "vector_score": 0.5029162165026443,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.30174972990158655,
+          "vector_rank": 3,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "8b507336-5b54-4035-be10-a437622a6d7a",
+          "mcp_problem_title": "Ingin upgrade audio tapi budget terbatas",
+          "mcp_description": "Customer mau upgrade sistem audio tapi perlu dilakukan bertahap sesuai budget.",
+          "vector_score": 0.493014395236969,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.29580863714218136,
+          "vector_rank": 4,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "43e3985c-fbf1-43c1-bb95-14f57024ab54",
+          "mcp_problem_title": "Ingin install audio tapi tidak mau potong kabel",
+          "mcp_description": "Customer ingin upgrade audio mobil tetapi tidak mau merusak kabel original pabrik. Ingin instalasi yang reversible dan rapi.",
+          "vector_score": 0.48893976475245804,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.2933638588514748,
+          "vector_rank": 5,
+          "bm25_rank": null
+        }
+      ]
+    },
+    {
+      "query_id": "V06",
+      "kategori": "Berbasis Kendaraan",
+      "query_text": "rekomendasi audio system untuk Suzuki Ertiga",
+      "embedding_available": true,
+      "retrieved_problems": [
+        {
+          "mcp_id": "4dcf193c-d484-4fe4-9814-73d5823bf132",
+          "mcp_problem_title": "Butuh audio yang cocok untuk keluarga dan anak-anak",
+          "mcp_description": "Customer butuh sistem audio yang aman untuk anak-anak, volume bisa dibatasi, dan ada fitur entertainment seperti layar untuk video.",
+          "vector_score": 0.530803918838501,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.3184823513031006,
+          "vector_rank": 1,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "55a2ab16-143c-466d-903a-08b454634306",
+          "mcp_problem_title": "Ingin audio lebih keras untuk kompetisi/sound pressure",
+          "mcp_description": "Customer ingin sistem audio yang sangat keras untuk keperluan kompetisi SPL atau sound pressure.",
+          "vector_score": 0.4983765780925751,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.299025946855545,
+          "vector_rank": 2,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "8e2c0b60-4f07-4cd5-91ef-5bb2a59709b2",
+          "mcp_problem_title": "Build sistem audio baru dari nol",
+          "mcp_description": "Customer baru beli mobil dan mau langsung build sistem audio yang lengkap dan bagus.",
+          "vector_score": 0.4978106617927551,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.2986863970756531,
+          "vector_rank": 3,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "8b507336-5b54-4035-be10-a437622a6d7a",
+          "mcp_problem_title": "Ingin upgrade audio tapi budget terbatas",
+          "mcp_description": "Customer mau upgrade sistem audio tapi perlu dilakukan bertahap sesuai budget.",
+          "vector_score": 0.4831216335296631,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.28987298011779783,
+          "vector_rank": 4,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "43e3985c-fbf1-43c1-bb95-14f57024ab54",
+          "mcp_problem_title": "Ingin install audio tapi tidak mau potong kabel",
+          "mcp_description": "Customer ingin upgrade audio mobil tetapi tidak mau merusak kabel original pabrik. Ingin instalasi yang reversible dan rapi.",
+          "vector_score": 0.4686124101609339,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.28116744609656036,
+          "vector_rank": 5,
+          "bm25_rank": null
+        }
+      ]
+    },
+    {
+      "query_id": "V07",
+      "kategori": "Berbasis Kendaraan",
+      "query_text": "tweeter dan speaker depan untuk Hyundai Stargazer",
+      "embedding_available": true,
+      "retrieved_problems": [
+        {
+          "mcp_id": "0745ed72-7722-4991-96a2-33948e00631f",
+          "mcp_problem_title": "Speaker bawaan mobil jelek, mau ganti",
+          "mcp_description": "Speaker original pabrik terasa flat dan tidak bertenaga. Customer ingin upgrade langsung terasa.",
+          "vector_score": 0.5004123747594589,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.3002474248556753,
+          "vector_rank": 1,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "6451ad6c-a60b-4a92-91d8-73b020d802e1",
+          "mcp_problem_title": "Ingin upgrade dari single DIN ke double DIN",
+          "mcp_description": "Customer punya mobil dengan head unit single DIN lama dan ingin upgrade ke double DIN dengan layar lebih besar dan fitur modern.",
+          "vector_score": 0.4431004192292949,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.2658602515375769,
+          "vector_rank": 2,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "43e3985c-fbf1-43c1-bb95-14f57024ab54",
+          "mcp_problem_title": "Ingin install audio tapi tidak mau potong kabel",
+          "mcp_description": "Customer ingin upgrade audio mobil tetapi tidak mau merusak kabel original pabrik. Ingin instalasi yang reversible dan rapi.",
+          "vector_score": 0.4184859291348746,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.25109155748092477,
+          "vector_rank": 3,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "d71440dd-5d04-4bf2-a4ca-c630d21063cc",
+          "mcp_problem_title": "Vocal dan mid range kurang jelas",
+          "mcp_description": "Suara vocal penyanyi tidak terdengar jelas, tertutup bass atau musik. Mid range terasa tipis.",
+          "vector_score": 0.40722839150090606,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.24433703490054362,
+          "vector_rank": 4,
+          "bm25_rank": null
+        },
+        {
+          "mcp_id": "4dcf193c-d484-4fe4-9814-73d5823bf132",
+          "mcp_problem_title": "Butuh audio yang cocok untuk keluarga dan anak-anak",
+          "mcp_description": "Customer butuh sistem audio yang aman untuk anak-anak, volume bisa dibatasi, dan ada fitur entertainment seperti layar untuk video.",
+          "vector_score": 0.40508121252059937,
+          "bm25_score": 0.0,
+          "hybrid_score": 0.24304872751235962,
+          "vector_rank": 5,
+          "bm25_rank": null
+        }
+      ]
+    }
+  ]
+}
