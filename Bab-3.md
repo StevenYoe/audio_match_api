@@ -117,7 +117,7 @@ VoyageAI voyage-3.5-lite dipilih karena menghasilkan embedding berkualitas tingg
 
 Sumber: Diolah oleh penulis (2026)
 
-Google Gemini gemini-2.5-flash-lite dipilih karena menawarkan kecepatan generasi tinggi dengan biaya operasional sangat rendah, menjadikannya pilihan yang tepat untuk sistem chatbot yang mengutamakan latensi respons rendah. Model ini memiliki kemampuan instruction following yang memadai untuk mengikuti instruksi adaptasi gaya bahasa dalam system prompt secara konsisten. Suhu generasi ditetapkan pada 0,1 untuk menghasilkan respons yang deterministik, sedangkan batas token output ditetapkan pada 2.000 token per respons. Chang et al. (2024) menekankan bahwa evaluasi LLM yang menyeluruh harus mencakup dimensi kemampuan instruksi, kualitas generasi, dan efisiensi operasional secara bersamaan dimana ketiga dimensi tersebut menjadi dasar pertimbangan pemilihan model dalam sistem AudioMatch.
+Google Gemini gemini-2.5-flash-lite dipilih karena menawarkan kecepatan generasi tinggi dengan biaya operasional sangat rendah, menjadikannya pilihan yang tepat untuk sistem chatbot yang mengutamakan latensi respons rendah. Model ini memiliki kemampuan instruction following yang memadai untuk mengikuti instruksi adaptasi gaya bahasa dalam system prompt secara konsisten. Suhu generasi ditetapkan pada 0,1 untuk menghasilkan respons yang deterministik, sedangkan batas token output ditetapkan pada 2.000 token per respons. Dipilihnya nilai temperature 0,1 — bukan 0,0 yang sepenuhnya deterministik — didasarkan pada pertimbangan bahwa temperature 0,0 cenderung menghasilkan formulasi yang berulang dan kaku, terutama saat konteks retrieval mengandung struktur teks yang serupa antar dokumen. Nilai 0,1 mempertahankan sifat hampir-deterministik sekaligus memberikan sedikit variasi leksikal yang membuat respons terasa lebih natural dalam konteks percakapan chatbot. Chang et al. (2024) menekankan bahwa evaluasi LLM yang menyeluruh harus mencakup dimensi kemampuan instruksi, kualitas generasi, dan efisiensi operasional secara bersamaan dimana ketiga dimensi tersebut menjadi dasar pertimbangan pemilihan model dalam sistem AudioMatch.
 
 **Tabel 3.6** Layer Caching
 
@@ -200,7 +200,7 @@ Apabila skor hybrid tertinggi dari seluruh dokumen yang dikembalikan tidak melam
 
 #### 3.2.5.1 Mekanisme Hybrid Search dengan RRF
 
-Hybrid Search pada AudioMatch beroperasi melalui dua jalur retrieval yang berjalan secara paralel dan digabungkan melalui strategi fusion berbasis prioritas. Jalur pertama adalah dense retrieval, di mana query pengguna diubah menjadi vektor embedding 1024 dimensi menggunakan VoyageAI voyage-3.5-lite, kemudian dicari kemiripannya dengan embedding yang tersimpan di `master_customer_problems` menggunakan metrik cosine similarity dari pgvector. Hanya dokumen dengan skor kemiripan cosine di atas ambang batas 0,3 yang dipertimbangkan.
+Hybrid Search pada AudioMatch beroperasi melalui dua jalur retrieval yang berjalan secara paralel dan digabungkan melalui strategi fusion berbasis prioritas. Jalur pertama adalah dense retrieval, di mana query pengguna diubah menjadi vektor embedding 1024 dimensi menggunakan VoyageAI voyage-3.5-lite, kemudian dicari kemiripannya dengan embedding yang tersimpan di `master_customer_problems` menggunakan metrik cosine similarity dari pgvector. Hanya dokumen dengan skor kemiripan cosine di atas ambang batas 0,3 yang dipertimbangkan. Nilai ambang batas tersebut ditetapkan secara empiris melalui uji coba pada sampel kueri internal selama fase pengembangan, sebagai titik keseimbangan antara mempertahankan dokumen yang relevan secara semantik dan menyaring dokumen yang hanya memiliki kemiripan permukaan. Threshold yang terlalu tinggi (>0,5) menyebabkan mekanisme fallback terlalu sering dipicu karena dokumen relevan yang diformulasikan berbeda tersaring oleh ambang batas tersebut, sedangkan threshold yang terlalu rendah (<0,2) mengikutsertakan dokumen yang tidak relevan secara semantik ke dalam konteks retrieval. Nilai 0,3 juga konsisten dengan rentang yang lazim dilaporkan pada sistem retrieval berbasis domain spesifik yang menggunakan model embedding berbasis Transformer modern, di mana skor cosine similarity umumnya berada pada kisaran 0,2–0,5 untuk dokumen yang secara tematik berkaitan. Perlu dicatat bahwa penentuan nilai ini merupakan salah satu keterbatasan penelitian, karena tuning sistematis dengan pengujian terkontrol direkomendasikan sebagai arah pengembangan lanjutan.
 
 Jalur kedua adalah sparse retrieval menggunakan BM25 full-text search melalui fungsi `ts_rank_cd` PostgreSQL. Query dikonversi menjadi `tsquery` dengan konfigurasi bahasa Indonesia, kemudian dicocokkan dengan kolom `tsvector` pada tabel `master_customer_problems` menggunakan GIN index. Pendekatan leksikal ini efektif untuk pertanyaan yang menyebutkan nama merek atau kode model produk secara eksak.
 
@@ -317,7 +317,7 @@ Sumber: Diolah oleh penulis (2026)
 
 ---
 
-### 3.3.2 Rencana Pengujian Kualitas Retrieval (NDCG@K)
+### 3.3.2 Rencana Pengujian Kualitas Retrieval (NDCG@K dan Precision@K)
 
 Pengujian dilakukan menggunakan 30 kueri uji yang dikelompokkan berdasarkan jenis pertanyaan sebagai berikut:
 
@@ -331,9 +331,13 @@ Pengujian dilakukan menggunakan 30 kueri uji yang dikelompokkan berdasarkan jeni
 | Rekomendasi berbasis kendaraan | 7 | Pertanyaan yang menyebutkan merek/model kendaraan |
 | **Total** | **30** | |
 
-Untuk setiap kueri uji, disiapkan ground truth berupa daftar dokumen relevan yang diannotasi secara manual oleh pemilik Rendy Audio sebagai domain expert, dengan tingkat relevansi berskala 0–2 (0 = tidak relevan, 1 = relevan, 2 = sangat relevan). Setiap kueri kemudian dijalankan melalui pipeline Hybrid Search AudioMatch dan dihasilkan ranked list dokumen. DCG@K dan NDCG@K dihitung menggunakan formula:
+Untuk setiap kueri uji, disiapkan ground truth berupa daftar dokumen relevan yang diannotasi secara manual oleh pemilik Rendy Audio sebagai domain expert, dengan tingkat relevansi berskala 0–2 (0 = tidak relevan, 1 = relevan, 2 = sangat relevan). Proses anotasi dilakukan oleh pemilik Rendy Audio yang berperan sebagai satu-satunya domain expert dan annotator tunggal. Kepada annotator diberikan panduan anotasi tertulis yang mendefinisikan skala relevansi secara operasional: skor 2 (sangat relevan) diberikan apabila dokumen secara langsung dan lengkap menjawab inti pertanyaan; skor 1 (relevan) apabila dokumen berkaitan dengan topik pertanyaan namun tidak menjawab secara langsung atau hanya sebagian; skor 0 (tidak relevan) apabila dokumen sama sekali tidak berkaitan dengan kebutuhan informasi pertanyaan. Karena anotasi dilakukan oleh satu annotator yang merupakan domain expert, penilaian inter-annotator agreement tidak dilakukan, yang menjadi salah satu keterbatasan evaluasi ini. Setiap kueri kemudian dijalankan melalui pipeline Hybrid Search AudioMatch dan dihasilkan ranked list dokumen. DCG@K dan NDCG@K dihitung menggunakan formula:
 
 DCG@K=∑_(i=1)^K▒(2^(rel_i )-1)/log_2⁡〖(i+1)〗   ,NDCG@K=(DCG@K)/(IDCG@K)
+
+Precision@K=  (∑_(i=1)^K▒1[rel_i≥1])/K
+
+Di mana $\mathbb{1}[rel_i \geq 1]$ bernilai 1 apabila dokumen pada posisi ke-$i$ memiliki skor relevansi ≥ 1 (relevan atau sangat relevan), dan 0 apabila tidak relevan.
 
 **Tabel 3.11** Rencana Pengujian Kualitas Retrieval Hybrid Search
 
