@@ -161,6 +161,8 @@ LIMIT 5;
 
 *Vector search* menggunakan operator `<=>` dari ekstensi pgvector untuk menghitung *cosine distance*, sedangkan BM25 menggunakan fungsi `ts_rank_cd` dari PostgreSQL bawaan dengan kolom `tsvector` berindeks GIN. Hanya dokumen dengan *cosine similarity* di atas 0,3 yang diikutsertakan dari jalur *vector search*. Apabila tidak ada dokumen yang melampaui ambang batas tersebut, sistem beralih ke jalur *product-only fallback* yang mencari langsung pada tabel `master_products` melalui fungsi `get_products_by_brand()` atau *Hybrid Search* langsung.
 
+Perlu dicatat bahwa Gambar 3.5 pada Bab III merupakan representasi **logis** dari arsitektur pipeline yang menggambarkan setiap komponen proses secara konseptual — mulai dari konversi kueri menjadi vektor embedding, jalur *vector search* (cosine similarity), jalur *BM25 full-text search*, hingga penggabungan skor melalui RRF. Seluruh komponen tersebut memang diimplementasikan dalam sistem, namun secara teknis dikemas ke dalam satu fungsi SQL `search_problem_hybrid()` yang berjalan di sisi basis data. Pendekatan ini dipilih karena PostgreSQL dengan ekstensi pgvector memungkinkan kedua jalur retrieval dan operasi RRF fusion dieksekusi dalam satu transaksi query tanpa *round-trip* jaringan antara aplikasi dan basis data, sehingga latensi keseluruhan pipeline lebih rendah dibandingkan bila setiap komponen diimplementasikan sebagai layanan terpisah di lapisan aplikasi.
+
 ---
 
 ### 4.1.7 Implementasi Deteksi Kendaraan Otomatis
@@ -459,6 +461,127 @@ Penilaian relevansi C04 menghasilkan vektor [2, 2, 1, 1, 1], di mana seluruh lim
 | 5 | 5 (posisi 1–5) | 5 | **1,0000** |
 
 Nilai P@3 dan P@5 keduanya sempurna (1,0000), konsisten dengan NDCG@3 = 1,0000 dan NDCG@5 = 1,0000. Kueri C04 menunjukkan kondisi ideal di mana seluruh dokumen yang dikembalikan relevan sekaligus tersusun dalam urutan yang optimal — dua aspek yang diukur oleh NDCG dan Precision secara bersamaan terpenuhi.
+
+---
+
+### 4.2.3 Log Proses Pipeline
+
+Log proses berikut menjabarkan alur pemrosesan setiap skenario uji di dalam pipeline sistem AudioMatch secara rinci, mulai dari *embed query*, deteksi kendaraan, pencarian produk kompatibel, hingga keluaran yang dikembalikan kepada klien. Kolom yang bertanda (−) berarti tahap tersebut tidak dijalankan — baik karena permintaan dihentikan lebih awal akibat kegagalan validasi input, karena permintaan diarahkan ke *endpoint* yang berbeda, maupun karena jalur pipeline yang diambil memang tidak melewati tahap tersebut.
+
+**Tabel 4.11** Log Proses Pipeline Sistem AudioMatch
+
+| No | Input Pesan | Embed Query | Deteksi Kendaraan | Kendaraan | Produk Kompatibel (get_products_for_car) | Jalur Retrieval | Deteksi Merek Produk | Produk (get_products_by_brand) | Hasil Hybrid Search Master Products | Chunk | Anotasi Relevansi [1–5] | Prompt ke Gemini | Output |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 (BBT Sk.1) | Apa fungsi amplifier dalam sistem audio mobil? | Ya | Tidak | − | − | Normal (Hybrid Search) | − | − | − | 5 | − | Prompt konsultasi; konteks: fungsi komponen audio mobil | HTTP 200; jawaban teknis fungsi amplifier; response_length=86 |
+| 2 (BBT Sk.2) | Rekomendasikan upgrade audio untuk Hyundai Stargazer | Ya | Ya | Hyundai Stargazer (MPV) | 1 produk kompatibel dikembalikan | Normal + Kompatibilitas Kendaraan | − | − | − | 5 | − | Prompt konsultasi + kendaraan; konteks: upgrade audio MPV + produk kompatibel Hyundai Stargazer | HTTP 200; car_detected=True; recommendations_count=1 |
+| 3 (BBT Sk.3) | Lanjut yang nomor 2 | Ya | Tidak | − | − | Normal (Hybrid Search) | − | − | − | 5 | − | Prompt konsultasi + riwayat sesi; konteks: upgrade sistem audio | HTTP 200; session_consistent=True; respons merujuk konteks sesi sebelumnya |
+| 4 (BBT Sk.4) | Berikan saya resep nasi goreng | Ya | Tidak | − | − | Fallback (Hybrid Search Produk) | Tidak | − | Hybrid Search pada master_products; tidak ada produk relevan — kueri di luar domain audio mobil | 5 | − | Prompt konsultasi fallback; konteks: katalog produk umum | HTTP 200; di_luar_cakupan=True; sistem menyatakan topik di luar domain konsultasi audio mobil |
+| 5 (BBT Sk.5) | Apa itu head unit android? | Ya | Tidak | − | − | Normal (Hybrid Search) | − | − | − | 5 | − | Prompt konsultasi; konteks: fungsi dan jenis head unit | HTTP 200; new_session=True; session_id UUID baru digenerate dan dikembalikan |
+| 6 (BBT Sk.6) | [Permintaan identik × 110 dalam 60 detik] | − | − | − | − | − | − | − | − | − | − | − | HTTP 200 (98×) / 429 (12×); rate limiting aktif mulai permintaan ke-99 |
+| 7a (BBT Sk.7) | "" (string kosong) | − | − | − | − | − | − | − | − | − | − | − | HTTP 422; validasi Pydantic gagal; field message tidak boleh kosong |
+| 7b (BBT Sk.7) | "   " (tiga spasi) | Ya | Tidak | − | − | Normal (Hybrid Search) | − | − | − | 5 | − | Prompt konsultasi; konteks: audio umum | HTTP 200; spasi lolos validasi framework; pipeline tetap dijalankan |
+| 7c (BBT Sk.7) | {} (tanpa field message) | − | − | − | − | − | − | − | − | − | − | − | HTTP 422; validasi Pydantic gagal; field message wajib tidak ditemukan |
+| 8 (BBT Sk.8) | GET /api/v1/products | − | − | − | − | − (endpoint berbeda) | − | − | − | − | − | − | HTTP 200; 111 produk aktif dikembalikan dengan field id, name, category, price |
+| 9a (BBT Sk.9) | Suara di mobil kurang jernih | Ya | Tidak | − | − | Normal (Hybrid Search) | − | − | − | 5 | − | Prompt konsultasi; konteks: solusi suara tidak jernih dan distorsi | HTTP 200; sesi baru dibuat; pesan pertama berhasil diproses |
+| 9b (BBT Sk.9) | Lanjut yang tadi, apa solusinya? | Ya | Tidak | − | − | Normal (Hybrid Search) | − | − | − | 5 | − | Prompt konsultasi + riwayat sesi; konteks: solusi dan rekomendasi produk speaker | HTTP 200; session_id konsisten; riwayat pesan pertama ditemukan di Redis |
+| 9c (BBT Sk.9) | Berapa biaya untuk solusi tersebut? | Ya | Tidak | − | − | Normal (Hybrid Search) | − | − | − | 5 | − | Prompt konsultasi + riwayat sesi; konteks: estimasi biaya upgrade audio | HTTP 200; session_id konsisten; riwayat 2 pesan sebelumnya ditemukan |
+| K01 | Amplifier 4 channel 75 watt cocok untuk berapa speaker? | Ya | Tidak | − | − | Normal (Hybrid Search) | − | − | − | 5 | [0, 0, 1, 0, 0] | Prompt konsultasi; konteks: kompatibilitas amplifier multi-speaker | HTTP 200; NDCG@3=0,5000; NDCG@5=0,5000; dokumen relevan muncul di posisi ke-3 |
+| K02 | Berapa watt amplifier yang dibutuhkan untuk subwoofer 12 inch? | Ya | Tidak | − | − | Normal (Hybrid Search) | − | − | − | 5 | [1, 0, 0, 0, 2] | Prompt konsultasi; konteks: kebutuhan daya amplifier untuk subwoofer | HTTP 200; NDCG@3=0,2754; NDCG@5=0,5950; dokumen sangat relevan muncul di posisi ke-5 |
+| K03 | Speaker impedansi 4 ohm bisa dipasang di amplifier 8 ohm? | Ya | Tidak | − | − | Normal (Hybrid Search) | − | − | − | 5 | [0, 1, 0, 0, 0] | Prompt konsultasi; konteks: kesesuaian impedansi speaker dan amplifier | HTTP 200; NDCG@3=0,6309; NDCG@5=0,6309; dokumen relevan di posisi ke-2 |
+| K04 | Cara setting gain amplifier agar speaker tidak distorsi | Ya | Tidak | − | − | Normal (Hybrid Search) | − | − | − | 5 | [2, 0, 1, 0, 0] | Prompt konsultasi; konteks: kalibrasi gain amplifier | HTTP 200; NDCG@3=0,9639; NDCG@5=0,9639; dokumen sangat relevan di posisi ke-1 |
+| K05 | Bisa pasang 6 speaker ke amplifier 4 channel? | Ya | Tidak | − | − | Normal (Hybrid Search) | − | − | − | 5 | [1, 1, 0, 0, 0] | Prompt konsultasi; konteks: konfigurasi pemasangan banyak speaker | HTTP 200; NDCG@3=1,0000; NDCG@5=1,0000; dua dokumen relevan di posisi ke-1 dan ke-2 |
+| K06 | Perbedaan RCA output 4V dan 2V pada head unit untuk amplifier | Ya | Tidak | − | − | Normal (Hybrid Search) | − | − | − | 5 | [1, 1, 0, 0, 0] | Prompt konsultasi; konteks: spesifikasi output RCA head unit | HTTP 200; NDCG@3=1,0000; NDCG@5=1,0000; dua dokumen relevan di posisi ke-1 dan ke-2 |
+| K07 | Cara memilih crossover yang tepat untuk speaker component | Ya | Tidak | − | − | Normal (Hybrid Search) | − | − | − | 5 | [0, 0, 0, 1, 0] | Prompt konsultasi; konteks: pemilihan dan instalasi crossover speaker | HTTP 200; NDCG@3=0,0000; NDCG@5=0,4307; tidak ada dokumen relevan di tiga posisi teratas |
+| K08 | Ukuran kabel power amplifier yang direkomendasikan | Ya | Tidak | − | − | Normal (Hybrid Search) | − | − | − | 5 | [2, 0, 0, 0, 0] | Prompt konsultasi; konteks: spesifikasi kabel daya amplifier | HTTP 200; NDCG@3=1,0000; NDCG@5=1,0000; dokumen sangat relevan di posisi ke-1 |
+| P01 | Pioneer DEH-S6250BT head unit | Ya | Tidak | − | − | Fallback (get_products_by_brand) | Ya | Pioneer: 5 produk dikembalikan | − | 5 | [2, 1, 0, 0, 1] | Prompt konsultasi fallback; konteks: produk Pioneer dari get_products_by_brand | HTTP 200; NDCG@3=0,8790; NDCG@5=0,9726; produk Pioneer sangat relevan di posisi ke-1 |
+| P02 | Kenwood KDC-BT560U spesifikasi dan harga | Ya | Tidak | − | − | Fallback (get_products_by_brand) | Ya | Kenwood: 5 produk dikembalikan | − | 5 | [1, 0, 0, 0, 0] | Prompt konsultasi fallback; konteks: produk Kenwood dari get_products_by_brand | HTTP 200; NDCG@3=1,0000; NDCG@5=1,0000; produk Kenwood relevan di posisi ke-1 |
+| P03 | Nakamichi NA3605 fitur dan keunggulan | Ya | Tidak | − | − | Fallback (get_products_by_brand) | Ya | Nakamichi: 5 produk dikembalikan | − | 5 | [1, 0, 0, 0, 0] | Prompt konsultasi fallback; konteks: produk Nakamichi dari get_products_by_brand | HTTP 200; NDCG@3=1,0000; NDCG@5=1,0000; produk Nakamichi relevan di posisi ke-1 |
+| P04 | Hertz Dieci speaker component DCX 165.3 | Ya | Tidak | − | − | Fallback (get_products_by_brand) | Ya | Hertz: 5 produk dikembalikan | − | 5 | [1, 2, 0, 1, 0] | Prompt konsultasi fallback; konteks: produk Hertz dari get_products_by_brand | HTTP 200; NDCG@3=0,7003; NDCG@5=0,8045; produk Hertz sangat relevan di posisi ke-2 |
+| P05 | JVC KD-X371BT head unit Bluetooth | Ya | Tidak | − | − | Fallback (get_products_by_brand) | Ya | JVC: 5 produk dikembalikan | − | 5 | [2, 0, 0, 1, 0] | Prompt konsultasi fallback; konteks: produk JVC dari get_products_by_brand | HTTP 200; NDCG@3=0,8262; NDCG@5=0,9448; produk JVC sangat relevan di posisi ke-1 |
+| P06 | Subwoofer Rockford Fosgate Punch P3 | Ya | Tidak | − | − | Fallback (get_products_by_brand) | Ya | Rockford Fosgate: 5 produk dikembalikan | − | 5 | [2, 2, 0, 0, 1] | Prompt konsultasi fallback; konteks: produk Rockford Fosgate dari get_products_by_brand | HTTP 200; NDCG@3=0,9073; NDCG@5=0,9790; dua produk Rockford Fosgate sangat relevan di posisi ke-1 dan ke-2 |
+| P07 | Tweeter JL Audio C1 075ct | Ya | Tidak | − | − | Fallback (get_products_by_brand) | Ya | JL Audio: 5 produk dikembalikan | − | 5 | [1, 2, 2, 0, 0] | Prompt konsultasi fallback; konteks: produk JL Audio dari get_products_by_brand | HTTP 200; NDCG@3=0,8146; NDCG@5=0,8146; dua produk JL Audio sangat relevan di posisi ke-2 dan ke-3 |
+| C01 | Apa fungsi head unit di sistem audio mobil? | Ya | Tidak | − | − | Normal (Hybrid Search) | − | − | − | 5 | [2, 2, 1, 0, 1] | Prompt konsultasi; konteks: fungsi dan jenis head unit | HTTP 200; NDCG@3=1,0000; NDCG@5=0,9925; dua dokumen sangat relevan di posisi ke-1 dan ke-2 |
+| C02 | Perbedaan speaker coaxial dan speaker component | Ya | Tidak | − | − | Normal (Hybrid Search) | − | − | − | 5 | [1, 2, 1, 2, 1] | Prompt konsultasi; konteks: perbedaan tipe speaker coaxial dan component | HTTP 200; NDCG@3=0,6291; NDCG@5=0,8167; seluruh 5 dokumen relevan; sangat relevan di posisi ke-2 dan ke-4 |
+| C03 | Kenapa bass mobil tidak terasa nendang padahal sudah pasang subwoofer? | Ya | Tidak | − | − | Normal (Hybrid Search) | − | − | − | 5 | [2, 1, 0, 0, 1] | Prompt konsultasi; konteks: permasalahan dan solusi bass subwoofer | HTTP 200; NDCG@3=0,8790; NDCG@5=0,9726; dokumen sangat relevan di posisi ke-1 |
+| C04 | Bagaimana cara upgrade audio mobil untuk pemula dengan budget terbatas? | Ya | Tidak | − | − | Normal (Hybrid Search) | − | − | − | 5 | [2, 2, 1, 1, 1] | Prompt konsultasi; konteks: panduan upgrade audio dan manajemen anggaran | HTTP 200; NDCG@3=1,0000; NDCG@5=1,0000; seluruh 5 dokumen relevan; dua sangat relevan di posisi ke-1 dan ke-2 |
+| C05 | Apa itu DSP digital signal processor dalam audio mobil? | Ya | Tidak | − | − | Normal (Hybrid Search) | − | − | − | 5 | [1, 0, 1, 0, 0] | Prompt konsultasi; konteks: konsep dan fungsi DSP audio mobil | HTTP 200; NDCG@3=0,9197; NDCG@5=0,9197; dua dokumen relevan di posisi ke-1 dan ke-3 |
+| C06 | Perbedaan subwoofer sealed box dan ported box untuk kualitas suara | Ya | Tidak | − | − | Normal (Hybrid Search) | − | − | − | 5 | [2, 1, 0, 2, 1] | Prompt konsultasi; konteks: karakteristik enclosure sealed vs ported | HTTP 200; NDCG@3=0,6733; NDCG@5=0,9118; dokumen sangat relevan di posisi ke-1 dan ke-4 |
+| C07 | Cara menghilangkan noise suara dengung di audio mobil | Ya | Tidak | − | − | Normal (Hybrid Search) | − | − | − | 5 | [2, 0, 1, 0, 0] | Prompt konsultasi; konteks: identifikasi dan penanganan noise audio | HTTP 200; NDCG@3=0,9639; NDCG@5=0,9639; dokumen sangat relevan di posisi ke-1 |
+| C08 | Mengapa suara speaker mobil pecah dan distorsi saat volume tinggi? | Ya | Tidak | − | − | Normal (Hybrid Search) | − | − | − | 5 | [2, 1, 0, 0, 0] | Prompt konsultasi; konteks: penyebab dan solusi distorsi speaker | HTTP 200; NDCG@3=1,0000; NDCG@5=1,0000; dokumen sangat relevan di posisi ke-1 |
+| V01 | Rekomendasi upgrade audio untuk Mitsubishi Xpander | Ya | Ya | Mitsubishi Xpander (MPV) | Produk kompatibel MPV dikembalikan | Normal + Kompatibilitas Kendaraan | − | − | − | 5 | [2, 1, 2, 2, 1] | Prompt konsultasi + kendaraan; konteks: upgrade audio MPV + produk kompatibel Mitsubishi Xpander | HTTP 200; NDCG@3=0,8026; NDCG@5=0,9445; kompatibilitas Xpander diterapkan |
+| V02 | Speaker yang cocok untuk Honda Brio city car | Ya | Ya | Honda Brio (City Car) | Produk kompatibel City Car dikembalikan | Normal + Kompatibilitas Kendaraan | − | − | − | 5 | [2, 1, 1, 1, 1] | Prompt konsultasi + kendaraan; konteks: rekomendasi speaker + produk kompatibel Honda Brio | HTTP 200; NDCG@3=1,0000; NDCG@5=1,0000; kompatibilitas Brio diterapkan |
+| V03 | Subwoofer terbaik untuk Toyota Avanza MPV | Ya | Ya | Toyota Avanza (MPV) | Produk kompatibel MPV dikembalikan | Normal + Kompatibilitas Kendaraan | − | − | − | 5 | [1, 0, 2, 1, 1] | Prompt konsultasi + kendaraan; konteks: pemilihan subwoofer + produk kompatibel Toyota Avanza | HTTP 200; NDCG@3=0,6052; NDCG@5=0,7273; dokumen sangat relevan muncul di posisi ke-3 |
+| V04 | Setup audio lengkap untuk Toyota Fortuner SUV | Ya | Ya | Toyota Fortuner (SUV) | Produk kompatibel SUV dikembalikan | Normal + Kompatibilitas Kendaraan | − | − | − | 5 | [2, 1, 1, 1, 1] | Prompt konsultasi + kendaraan; konteks: setup audio SUV premium + produk kompatibel Toyota Fortuner | HTTP 200; NDCG@3=1,0000; NDCG@5=1,0000; kompatibilitas Fortuner diterapkan |
+| V05 | Upgrade head unit android untuk Honda Jazz | Ya | Ya | Honda Jazz | Produk kompatibel Honda Jazz dikembalikan | Normal + Kompatibilitas Kendaraan | − | − | − | 5 | [2, 0, 1, 1, 1] | Prompt konsultasi + kendaraan; konteks: upgrade head unit android + produk kompatibel Honda Jazz | HTTP 200; NDCG@3=0,8473; NDCG@5=0,9465; kompatibilitas Jazz diterapkan |
+| V06 | Rekomendasi audio system untuk Suzuki Ertiga | Ya | Ya | Suzuki Ertiga | Produk kompatibel MPV dikembalikan | Normal + Kompatibilitas Kendaraan | − | − | − | 5 | [2, 0, 2, 1, 1] | Prompt konsultasi + kendaraan; konteks: sistem audio MPV + produk kompatibel Suzuki Ertiga | HTTP 200; NDCG@3=0,8344; NDCG@5=0,9131; dua dokumen sangat relevan di posisi ke-1 dan ke-3 |
+| V07 | Tweeter dan speaker depan untuk Hyundai Stargazer | Ya | Ya | Hyundai Stargazer (MPV) | Produk kompatibel MPV dikembalikan | Normal + Kompatibilitas Kendaraan | − | − | − | 5 | [2, 0, 1, 2, 0] | Prompt konsultasi + kendaraan; konteks: rekomendasi tweeter dan speaker depan + produk kompatibel Hyundai Stargazer | HTTP 200; NDCG@3=0,6490; NDCG@5=0,8886; dokumen sangat relevan di posisi ke-1 dan ke-4 |
+
+Sumber: Diolah dari hasil pengujian sistem AudioMatch
+
+_Keterangan kolom: **Embed Query** — query dikonversi menjadi vektor 1.024 dimensi menggunakan VoyageAI voyage-3.5-lite; (−) jika permintaan tidak melewati pipeline chat. **Deteksi Kendaraan** — apakah *dictionary keyword matching* menemukan referensi merek atau model kendaraan dalam pesan; (−) jika permintaan tidak melewati pipeline. **Kendaraan** — nama kendaraan yang terdeteksi, atau (−) jika tidak ada. **Produk Kompatibel (get_products_for_car)** — output fungsi `get_products_for_car(car_type, car_size)` yang mengambil produk kompatibel dari `master_cars`; (−) jika tidak ada kendaraan terdeteksi. **Jalur Retrieval** — Normal: Hybrid Search pada `master_customer_problems` lalu `get_recommendations()`; Normal + Kompatibilitas Kendaraan: Hybrid Search disertai konteks kendaraan; Fallback: skor di bawah threshold sehingga pencarian dialihkan ke `master_products`; (−) tidak melalui pipeline chat. **Deteksi Merek Produk** — pada jalur Fallback, sistem memeriksa apakah query mengandung nama merek produk spesifik; (−) jika jalur Normal yang diambil. **Produk (get_products_by_brand)** — produk yang dikembalikan fungsi `get_products_by_brand()` bila merek terdeteksi pada jalur Fallback; (−) jika jalur Normal atau tidak ada merek. **Hasil Hybrid Search Master Products** — pada jalur Fallback tanpa merek terdeteksi, sistem menjalankan Hybrid Search langsung pada tabel `master_products`; kolom ini menampilkan hasil pencarian tersebut; (−) jika jalur Normal yang diambil atau jika merek berhasil terdeteksi sehingga fungsi `get_products_by_brand()` yang digunakan. **Chunk** — jumlah dokumen yang dikembalikan Hybrid Search. **Anotasi Relevansi [1–5]** — skor relevansi 0–2 per posisi dokumen 1–5; hanya berlaku untuk skenario pengujian kualitas retrieval (BBT menggunakan −). **Prompt ke Gemini** — ringkasan prompt yang dikirimkan; (−) jika tidak melalui pipeline chat._
+
+#### 4.2.3.1 Contoh Data Log Eksekusi Pipeline
+
+Untuk memberikan gambaran yang lebih konkret mengenai bentuk data log yang dihasilkan sistem pada setiap eksekusi, berikut disajikan contoh log konsol dan respons JSON aktual dari dua skenario uji representatif.
+
+**Contoh 1 — Skenario BBT Sk.2 (Deteksi Kendaraan + Hybrid Search Normal)**
+
+Log konsol yang dihasilkan server FastAPI saat memproses kueri "Rekomendasikan upgrade audio untuk Hyundai Stargazer":
+
+```
+INFO:     Car mention detected: brand='Hyundai', model='Stargazer'
+INFO:     Car matched: Hyundai Stargazer (MPV, Medium)
+INFO:     127.0.0.1:52341 - "POST /api/v1/chat/ HTTP/1.1" 200 OK
+```
+
+Respons JSON yang dikembalikan ke klien:
+
+```json
+{
+  "session_id": "550e8400-e29b-41d4-a716-446655440000",
+  "response": "Untuk Hyundai Stargazer yang merupakan MPV kabin medium, saya rekomendasikan upgrade bertahap mulai dari speaker depan terlebih dahulu...",
+  "recommendations": [
+    {
+      "solution_id": "car_42",
+      "solution_title": "Rekomendasi untuk Hyundai Stargazer",
+      "solution_description": "Produk audio yang kompatibel untuk Hyundai Stargazer (MPV, kabin Medium).",
+      "products": [
+        {
+          "id": "28",
+          "name": "Nakamichi NAM1610 Speaker 6.5 inch",
+          "category": "speaker",
+          "price": 850000,
+          "image": "⚡"
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Contoh 2 — Skenario BBT Sk.4 (Fallback + Di Luar Domain)**
+
+Log konsol saat memproses kueri "Berikan saya resep nasi goreng":
+
+```
+INFO:     127.0.0.1:52398 - "POST /api/v1/chat/ HTTP/1.1" 200 OK
+```
+
+Respons JSON yang dikembalikan (tidak ada rekomendasi, sistem menandai topik di luar domain):
+
+```json
+{
+  "session_id": "660f9511-f30c-52e5-b827-557766551111",
+  "response": "Maaf, saya hanya dapat membantu konsultasi seputar audio mobil. Untuk pertanyaan tentang resep masakan, saya tidak dapat memberikan informasi yang relevan.",
+  "recommendations": []
+}
+```
+
+Kedua contoh di atas menunjukkan bahwa data log sistem terdiri dari dua lapisan: (1) **log konsol** yang mencatat jalur keputusan internal pipeline (deteksi kendaraan, jalur retrieval yang dipilih) dan status HTTP yang dikembalikan server; serta (2) **respons JSON** yang merupakan output formal sistem kepada klien, berisi `session_id`, teks respons LLM, dan daftar rekomendasi produk terstruktur. Tabel 4.11 merupakan rekapitulasi terstruktur dari data log tersebut yang mengabstraksi setiap eksekusi menjadi satu baris ringkasan untuk memudahkan analisis lintas skenario.
+
+---
+
+Dari total 42 eksekusi yang dicatat pada Tabel 4.11, 13 baris merepresentasikan skenario *Black Box Testing* dan 30 baris merepresentasikan kueri pengujian kualitas retrieval. Pada seluruh eksekusi yang melewati pipeline chat, *embed query* menggunakan VoyageAI voyage-3.5-lite berhasil mengonversi query menjadi vektor 1.024 dimensi sebelum Hybrid Search dijalankan. Jalur Fallback terpicu pada delapan eksekusi: tujuh kueri kategori Merek Produk Spesifik (P01–P07) yang semuanya berhasil mendeteksi nama merek dalam query (Pioneer, Kenwood, Nakamichi, Hertz, JVC, Rockford Fosgate, JL Audio) sehingga fungsi `get_products_by_brand()` dipanggil untuk mengambil produk per merek; serta satu skenario BBT Sk.4 ("resep nasi goreng") di mana tidak ada merek produk yang terdeteksi sehingga sistem menjalankan Hybrid Search langsung pada tabel `master_products` — namun pencarian tersebut tidak menghasilkan produk relevan karena kueri berada di luar domain audio mobil, sehingga sistem merespons dengan `di_luar_cakupan=True`. Pada pengujian kualitas retrieval, seluruh tujuh kueri Berbasis Kendaraan (V01–V07) berhasil mendeteksi kendaraan yang disebutkan, menjalankan fungsi `search_car()` dan `get_products_for_car()` untuk menyiapkan konteks kompatibilitas sebelum Hybrid Search, yang tercermin dari Precision@5 kategori ini sebesar 0,8571 — tertinggi di antara keempat kategori yang diuji. Kueri K07 merupakan satu-satunya kueri yang menghasilkan NDCG@3 sebesar 0,0000, di mana tidak ada satu pun dokumen relevan yang muncul di antara tiga hasil teratas, mengidentifikasi topik *crossover speaker component* sebagai celah cakupan yang perlu diprioritaskan dalam pengembangan basis pengetahuan lanjutan.
 
 ---
 
