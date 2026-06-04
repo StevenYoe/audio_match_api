@@ -1,0 +1,17 @@
+# ABSTRAK
+
+**PENGEMBANGAN CHATBOT ASISTEN KONSULTASI AUDIO MOBIL: STUDI KASUS RENDY AUDIO MENGGUNAKAN METODE RETRIEVAL AUGMENTED GENERATION (RAG)**
+
+Pertumbuhan pasar audio mobil global yang mencapai nilai USD 10,89–12,24 miliar pada 2025 mendorong meningkatnya kebutuhan layanan konsultasi teknis yang akurat dan efisien. Toko audio mobil konvensional seperti Rendy Audio menghadapi beban konsultasi yang tinggi, di mana sekitar 70% dari 20–70 pertanyaan mingguan bersifat berulang, sehingga menyita waktu dan tenaga staf secara signifikan. Penelitian ini mengembangkan sistem AudioMatch, sebuah chatbot asisten konsultasi audio mobil yang mampu menjawab pertanyaan pelanggan secara otomatis, akurat, dan sesuai dengan spesifikasi kendaraan pengguna. Sistem dirancang untuk mengurangi beban kerja konsultasi berulang, meningkatkan konsistensi informasi yang diberikan, serta memperluas jangkauan layanan toko tanpa harus menambah sumber daya manusia. Sistem dibangun menggunakan pendekatan Retrieval-Augmented Generation (RAG) karena metode ini mampu menggabungkan kemampuan generatif AI dengan basis pengetahuan produk yang terstruktur, sehingga meminimalkan risiko informasi yang tidak akurat (hallucination). Hasil pengujian menunjukkan seluruh skenario fungsional berstatus PASS, serta nilai kualitas pencarian informasi (NDCG@3 sebesar 0,8100 dan NDCG@5 sebesar 0,8878) melampaui target yang ditetapkan. Sistem ini diharapkan dapat menjadi solusi praktis bagi usaha kecil dan menengah di industri otomotif dalam menghadirkan layanan konsultasi berbasis teknologi yang efisien dan terjangkau.
+
+**Kata Kunci:** Retrieval-Augmented Generation, Hybrid Search, Reciprocal Rank Fusion, BM25, Vector Search, Chatbot, Konsultasi Audio Mobil, Deteksi Kendaraan, NDCG, Large Language Model
+
+---
+
+# ABSTRACT
+
+**DEVELOPMENT OF A CAR AUDIO CONSULTATION ASSISTANT CHATBOT: A CASE STUDY OF RENDY AUDIO USING THE RETRIEVAL AUGMENTED GENERATION (RAG) METHOD**
+
+The global car audio market, valued at USD 10.89–12.24 billion in 2025, has driven a growing demand for accurate and efficient technical consultation services. Conventional car audio shops such as Rendy Audio face high consultation workloads, with approximately 70% of 20–70 weekly inquiries being repetitive in nature, placing a significant burden on staff time and resources. This study develops AudioMatch, a car audio consultation chatbot capable of answering customer inquiries automatically, accurately, and in accordance with the user's vehicle specifications. The system is designed to reduce repetitive consultation workloads, improve the consistency of information provided, and extend the shop's service capacity without requiring additional human resources. The system was built using a Retrieval-Augmented Generation (RAG) approach, as this method effectively combines generative AI capabilities with a structured product knowledge base, minimizing the risk of inaccurate information (hallucination). Testing results show that all functional test scenarios achieved a PASS status, and retrieval quality scores (NDCG@3 of 0.8100 and NDCG@5 of 0.8878) exceeded the defined targets. This system is expected to serve as a practical solution for small and medium enterprises in the automotive industry, enabling them to deliver efficient and accessible technology-based consultation services.
+
+**Keywords:** Retrieval-Augmented Generation, Hybrid Search, Reciprocal Rank Fusion, BM25, Vector Search, Chatbot, Car Audio Consultation, Vehicle Detection, NDCG, Large Language Model
