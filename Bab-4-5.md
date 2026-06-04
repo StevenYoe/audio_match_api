@@ -132,25 +132,61 @@ Tabel `master_customer_problems` memuat pola pertanyaan dan panduan teknis yang 
 
 ### 4.1.6 Implementasi Hybrid Search dan RRF Fusion
 
-Mekanisme pencarian hibrida menggabungkan kekuatan *dense retrieval* berbasis vektor dan *sparse retrieval* berbasis kata kunci (BM25). Penggabungan skor dari kedua jalur dilakukan menggunakan algoritma *Reciprocal Rank Fusion* (RRF) yang diimplementasikan langsung di tingkat basis data melalui fungsi `search_problem_hybrid()`. Potongan SQL yang menggambarkan logika penggabungan skor ditunjukkan sebagai berikut.
+Berbeda dengan representasi logis pada Gambar 3.5 yang menggambarkan setiap komponen pipeline secara konseptual, seluruh mekanisme Hybrid Search dan RRF Fusion pada AudioMatch diimplementasikan secara terpadu dalam satu fungsi SQL `search_problem_hybrid()` yang berjalan langsung di sisi basis data. Pendekatan ini dipilih karena PostgreSQL dengan ekstensi pgvector memungkinkan jalur *dense retrieval* berbasis vektor, jalur *sparse retrieval* berbasis kata kunci (BM25), dan operasi RRF Fusion dieksekusi dalam satu transaksi query tanpa *round-trip* jaringan antara aplikasi dan basis data, sehingga latensi keseluruhan pipeline lebih rendah. Logika penggabungan skor dari kedua jalur dengan bobot 60% untuk jalur vektor dan 40% untuk jalur BM25 diimplementasikan menggunakan empat *Common Table Expression* (CTE) — yaitu subquery bernama yang didefinisikan dengan klausa `WITH` dan dapat dirujuk seperti tabel sementara dalam query yang sama. Struktur lengkap keempat CTE tersebut ditunjukkan sebagai berikut.
 
 ```sql
--- Gabungan skor: 60% vektor + 40% BM25 menggunakan RRF
+-- Fungsi search_problem_hybrid() — empat CTE berantai
 WITH vector_results AS (
-    SELECT p.mcp_id, ...,
+    -- CTE 1: Dense retrieval — ambil dokumen dengan cosine similarity > 0,3
+    SELECT p.mcp_id,
+           p.mcp_problem_title,
+           p.mcp_description,
+           p.mcp_recommended_approach,
            1 - (p.mcp_embedding <=> query_embedding) AS similarity,
-           ROW_NUMBER() OVER (ORDER BY similarity DESC) AS rank
+           ROW_NUMBER() OVER (
+               ORDER BY 1 - (p.mcp_embedding <=> query_embedding) DESC
+           ) AS rank
     FROM sales.master_customer_problems p
-    WHERE similarity > 0.3       -- ambang batas cosine similarity
+    WHERE p.mcp_is_active = TRUE
+      AND p.mcp_embedding IS NOT NULL
+      AND 1 - (p.mcp_embedding <=> query_embedding) > 0.3
 ),
 bm25_results AS (
-    SELECT p.mcp_id, ...,
+    -- CTE 2: Sparse retrieval — pencocokan kata kunci BM25 (ts_rank_cd)
+    SELECT p.mcp_id,
+           p.mcp_problem_title,
+           p.mcp_description,
+           p.mcp_recommended_approach,
            ts_rank_cd(p.mcp_search_vector,
                plainto_tsquery('indonesian', query_text), 32) AS similarity,
-           ROW_NUMBER() OVER (ORDER BY similarity DESC) AS rank
+           ROW_NUMBER() OVER (
+               ORDER BY ts_rank_cd(p.mcp_search_vector,
+                   plainto_tsquery('indonesian', query_text), 32) DESC
+           ) AS rank
     FROM sales.master_customer_problems p
     WHERE p.mcp_search_vector @@ plainto_tsquery('indonesian', query_text)
+),
+all_candidates AS (
+    -- CTE 3: Gabungkan semua kandidat dari kedua jalur (vector_results & bm25_results)
+    SELECT mcp_id FROM vector_results
+    UNION
+    SELECT mcp_id FROM bm25_results
+),
+rrf_scores AS (
+    -- CTE 4: Hitung skor RRF tiap kandidat dengan LEFT JOIN ke vector_results & bm25_results
+    SELECT c.mcp_id,
+           v.mcp_problem_title,
+           v.mcp_description,
+           v.mcp_recommended_approach,
+           v.similarity AS vector_score,
+           b.similarity AS bm25_score,
+           v.rank       AS vector_rank,
+           b.rank       AS bm25_rank
+    FROM all_candidates c
+    LEFT JOIN vector_results v ON c.mcp_id = v.mcp_id
+    LEFT JOIN bm25_results  b  ON c.mcp_id = b.mcp_id
 )
+-- Query akhir: kombinasi tertimbang skor kedua jalur
 SELECT mcp_id,
        (0.6 * COALESCE(vector_score, 0.0) +
         0.4 * COALESCE(bm25_score,   0.0)) AS hybrid_score
@@ -159,9 +195,9 @@ ORDER BY hybrid_score DESC
 LIMIT 5;
 ```
 
-*Vector search* menggunakan operator `<=>` dari ekstensi pgvector untuk menghitung *cosine distance*, sedangkan BM25 menggunakan fungsi `ts_rank_cd` dari PostgreSQL bawaan dengan kolom `tsvector` berindeks GIN. Hanya dokumen dengan *cosine similarity* di atas 0,3 yang diikutsertakan dari jalur *vector search*. Apabila tidak ada dokumen yang melampaui ambang batas tersebut, sistem beralih ke jalur *product-only fallback* yang mencari langsung pada tabel `master_products` melalui fungsi `get_products_by_brand()` atau *Hybrid Search* langsung.
+*Vector search* menggunakan operator `<=>` dari ekstensi pgvector untuk menghitung *cosine distance*, sedangkan BM25 menggunakan fungsi `ts_rank_cd` dari PostgreSQL bawaan dengan kolom `tsvector` berindeks GIN. Ambang batas 0,3 pada CTE `vector_results` berperan sebagai filter: dokumen dengan skor kemiripan cosine di bawah nilai tersebut tidak dimasukkan ke dalam kandidat *dense retrieval*. Apabila `vector_results` menghasilkan daftar kosong (tidak ada dokumen yang melampaui ambang batas), CTE `all_candidates` hanya berisi hasil dari `bm25_results`, dan fungsi tetap mengembalikan hasil berdasarkan jalur BM25 saja. Logika *fallback* ke jalur *product-only* — yaitu beralih ke pencarian langsung pada tabel `master_products` melalui fungsi `get_products_by_brand()` atau *Hybrid Search* langsung pada katalog produk — diimplementasikan di lapisan aplikasi Python (`chat.py`), bukan di dalam fungsi SQL ini. Lapisan aplikasi memeriksa apakah hasil yang dikembalikan oleh `search_problem_hybrid()` kosong, dan bila iya, mengeksekusi jalur *fallback* tersebut.
 
-Perlu dicatat bahwa Gambar 3.5 pada Bab III merupakan representasi **logis** dari arsitektur pipeline yang menggambarkan setiap komponen proses secara konseptual — mulai dari konversi kueri menjadi vektor embedding, jalur *vector search* (cosine similarity), jalur *BM25 full-text search*, hingga penggabungan skor melalui RRF. Seluruh komponen tersebut memang diimplementasikan dalam sistem, namun secara teknis dikemas ke dalam satu fungsi SQL `search_problem_hybrid()` yang berjalan di sisi basis data. Pendekatan ini dipilih karena PostgreSQL dengan ekstensi pgvector memungkinkan kedua jalur retrieval dan operasi RRF fusion dieksekusi dalam satu transaksi query tanpa *round-trip* jaringan antara aplikasi dan basis data, sehingga latensi keseluruhan pipeline lebih rendah dibandingkan bila setiap komponen diimplementasikan sebagai layanan terpisah di lapisan aplikasi.
+Perlu dicatat bahwa Gambar 3.5 pada Bab III merupakan representasi **logis** dari arsitektur pipeline yang menggambarkan setiap komponen proses secara konseptual. Proses yang digambarkan pada Gambar 3.5 mencakup: (1) konversi kueri menjadi vektor *embedding* menggunakan VoyageAI, (2) jalur *vector search* berbasis cosine similarity, (3) jalur *BM25 full-text search*, dan (4) penggabungan skor melalui RRF. Dari keempat proses tersebut, hanya proses (2), (3), dan (4) yang diimplementasikan di dalam fungsi SQL `search_problem_hybrid()`. Proses (1) — konversi kueri menjadi vektor *embedding* 1024 dimensi — dilakukan di lapisan aplikasi Python oleh `EmbeddingService` yang memanggil API VoyageAI *sebelum* fungsi SQL dipanggil; vektor hasil konversi tersebut kemudian dikirimkan sebagai parameter `query_embedding` ke fungsi `search_problem_hybrid()`. Dengan demikian, Gambar 3.5 pada Bab III dirancang sebagai arsitektur logis yang menggambarkan *what* (komponen apa saja yang terlibat dan alur data konseptualnya), sementara sub-bab ini menggambarkan *how* (bagaimana setiap komponen logis tersebut diwujudkan secara teknis, yaitu sebagian di lapisan aplikasi dan sebagian di lapisan basis data). Pemisahan antara arsitektur logis dan implementasi teknis ini adalah praktik umum dalam perancangan sistem.
 
 ---
 
