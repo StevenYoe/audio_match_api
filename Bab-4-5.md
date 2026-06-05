@@ -197,6 +197,55 @@ LIMIT 5;
 
 *Vector search* menggunakan operator `<=>` dari ekstensi pgvector untuk menghitung *cosine distance*, sedangkan BM25 menggunakan fungsi `ts_rank_cd` dari PostgreSQL bawaan dengan kolom `tsvector` berindeks GIN. Ambang batas 0,3 pada CTE `vector_results` berperan sebagai filter: dokumen dengan skor kemiripan cosine di bawah nilai tersebut tidak dimasukkan ke dalam kandidat *dense retrieval*. Apabila `vector_results` menghasilkan daftar kosong (tidak ada dokumen yang melampaui ambang batas), CTE `all_candidates` hanya berisi hasil dari `bm25_results`, dan fungsi tetap mengembalikan hasil berdasarkan jalur BM25 saja. Logika *fallback* ke jalur *product-only* — yaitu beralih ke pencarian langsung pada tabel `master_products` melalui fungsi `get_products_by_brand()` atau *Hybrid Search* langsung pada katalog produk — diimplementasikan di lapisan aplikasi Python (`chat.py`), bukan di dalam fungsi SQL ini. Lapisan aplikasi memeriksa apakah hasil yang dikembalikan oleh `search_problem_hybrid()` kosong, dan bila iya, mengeksekusi jalur *fallback* tersebut.
 
+Fungsi `get_products_by_brand()` merupakan *method* Python tersendiri yang didefinisikan dalam kelas `DatabaseService` (berkas `app/services/database_service.py`), terpisah dari fungsi SQL `search_problem_hybrid()`. Fungsi ini tidak memanggil *stored function* di PostgreSQL, melainkan menjalankan *query* SQL secara langsung ke tabel `sales.master_products` tanpa mekanisme *Hybrid Search*, sebagaimana ditunjukkan pada potongan kode berikut.
+
+```python
+# app/services/database_service.py
+async def get_products_by_brand(self, brand: str) -> List[Dict[str, Any]]:
+    query = """
+    SELECT
+        mp_id           AS product_id,
+        mp_name         AS product_name,
+        mp_category     AS product_category,
+        mp_brand        AS product_brand,
+        mp_price        AS product_price,
+        mp_description  AS product_description,
+        mp_image        AS product_image
+    FROM sales.master_products
+    WHERE LOWER(mp_brand) = LOWER($1)
+      AND mp_is_active = TRUE
+    ORDER BY mp_price DESC;
+    """
+    return await self.fetch(query, brand)
+```
+
+Fungsi ini menerima satu parameter `brand` berupa nama merek produk, lalu mengeksekusi *query* SQL ke tabel `sales.master_products` dengan filter `LOWER(mp_brand) = LOWER($1)` agar pencocokan tidak bersifat *case-sensitive*. Seluruh produk aktif dari merek tersebut dikembalikan sebagai daftar *dictionary* Python, diurutkan berdasarkan harga tertinggi (*premium first*) sehingga produk unggulan muncul lebih dahulu dalam rekomendasi.
+
+Fungsi ini kemudian dipanggil dari `app/api/v1/endpoints/chat.py` ketika jalur *fallback* aktif — yaitu setelah `search_problem_hybrid()` tidak menemukan masalah yang cocok dan sistem mendeteksi nama merek audio dalam kueri pengguna — sebagaimana ditunjukkan pada potongan kode berikut.
+
+```python
+# app/api/v1/endpoints/chat.py — Jalur Fallback (setelah hybrid search gagal menemukan masalah)
+
+# Daftar merek audio yang dikenali sistem
+known_brands = [
+    'kenwood', 'pioneer', 'jvc', 'nakamichi', 'clarion',
+    'hertz', 'jl audio', 'rockford fosgate', 'skeleton',
+    'dhd', 'avix', 'orca', 'exxent'
+]
+
+# Periksa apakah nama merek disebut dalam kueri pengguna
+mentioned_brands = [brand for brand in known_brands if brand in query_lower]
+
+if mentioned_brands:
+    for brand in mentioned_brands:
+        # Panggil get_products_by_brand() — pencarian langsung ke master_products
+        brand_products = await db.get_products_by_brand(brand)
+        if brand_products:
+            all_products_context.extend(brand_products)
+```
+
+Keluaran `brand_products` berupa daftar *dictionary* Python yang berisi kolom-kolom produk (`product_id`, `product_name`, `product_category`, `product_brand`, `product_price`, `product_description`, `product_image`). Daftar ini selanjutnya dimasukkan sebagai bagian dari konteks dalam *prompt* yang dikirimkan ke LLM Gemini untuk menghasilkan respons rekomendasi.
+
 Perlu dicatat bahwa Gambar 3.5 pada Bab III merupakan representasi **logis** dari arsitektur pipeline yang menggambarkan setiap komponen proses secara konseptual. Proses yang digambarkan pada Gambar 3.5 mencakup: (1) konversi kueri menjadi vektor *embedding* menggunakan VoyageAI, (2) jalur *vector search* berbasis cosine similarity, (3) jalur *BM25 full-text search*, dan (4) penggabungan skor melalui RRF. Dari keempat proses tersebut, hanya proses (2), (3), dan (4) yang diimplementasikan di dalam fungsi SQL `search_problem_hybrid()`. Proses (1) — konversi kueri menjadi vektor *embedding* 1024 dimensi — dilakukan di lapisan aplikasi Python oleh `EmbeddingService` yang memanggil API VoyageAI *sebelum* fungsi SQL dipanggil; vektor hasil konversi tersebut kemudian dikirimkan sebagai parameter `query_embedding` ke fungsi `search_problem_hybrid()`. Dengan demikian, Gambar 3.5 pada Bab III dirancang sebagai arsitektur logis yang menggambarkan *what* (komponen apa saja yang terlibat dan alur data konseptualnya), sementara sub-bab ini menggambarkan *how* (bagaimana setiap komponen logis tersebut diwujudkan secara teknis, yaitu sebagian di lapisan aplikasi dan sebagian di lapisan basis data). Pemisahan antara arsitektur logis dan implementasi teknis ini adalah praktik umum dalam perancangan sistem.
 
 ---

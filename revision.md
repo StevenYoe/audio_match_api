@@ -1,76 +1,132 @@
 Masukan/pertanyaan dari dosen:
 
-Pertama:
-Km tau jenis query ini kan?
-WITH vector*results AS (
-SELECT p.mcp_id, ...,
-1 - (p.mcp_embedding <=> query_embedding) AS similarity,
-ROW_NUMBER() OVER (ORDER BY similarity DESC) AS
-rank
-FROM sales.master_customer_problems p
-WHERE similarity > 0.3 -- ambang batas cosine similarity
-),
-bm25_results AS (
-SELECT p.mcp_id, ...,
-ts_rank_cd(p.mcp_search_vector,
-plainto_tsquery('indonesian', query_text), 32) AS similarity,
-ROW_NUMBER() OVER (ORDER BY similarity DESC) AS
-rank
-FROM sales.master_customer_problems p
-WHERE p.mcp_search_vector @@ plainto_tsquery('indonesian',
-query_text)
-)
-SELECT mcp_id,
-(0.6 * COALESCE(vector*score, 0.0) +
-0.4 * COALESCE(bm25_score, 0.0)) AS hybrid_score
-FROM rrf_scores
-ORDER BY hybrid_score DESC
-LIMIT 5;
+Logika fallback ke jalur
+product-only, yaitu beralih ke pencarian langsung pada tabel `master_products`
+melalui fungsi `get_products_by_brand()`
 
-WITH vector_results AS ( => ini apa istilahnya
+Apakah ini fungsi yg terpisah dari querynya?
 
-Kedua:
-Pertanyaan :
-ada WITH vector_results AS
-dan
-bm25_results AS
+Km bisa masukkan jg ya script python nya yg manggil fungsi ini. biar jelas
 
-ini kpn dipake?
-di bwhnya tidak ada memanggil vector_results dan bm25_results
+---
 
-Ketiga:
-Vector search menggunakan operator `<=>` dari ekstensi pgvector untuk
-menghitung cosine distance, sedangkan BM25 menggunakan fungsi
-`ts_rank_cd` dari PostgreSQL bawaan dengan kolom `tsvector` berindeks GIN.
-Hanya dokumen dengan cosine similarity di atas 0,3 yang diikutsertakan dari
-jalur vector search. Apabila tidak ada dokumen yang melampaui ambang batas
-tersebut, sistem beralih ke jalur product-only fallback yang mencari langsung
-pada tabel `master_products` melalui fungsi `get_products_by_brand()` atau
-Hybrid Search langsung.
+## Jawaban / Revisi
 
-Apabila tidak ada dokumen yang melampaui ambang batas
-tersebut, sistem beralih ke jalur product-only fallback yang mencari langsung
-pada tabel `master_products` melalui fungsi `get_products_by_brand()` atau
-Hybrid Search langsung.
+### 1. Apakah `get_products_by_brand()` fungsi yang terpisah?
 
-Apakah ini ada query tersebut?
+Ya, `get_products_by_brand()` adalah **method Python yang berdiri sendiri** (terpisah dari query hybrid search), didefinisikan di dalam kelas `DatabaseService` pada file `app/services/database_service.py`.
 
-Keempat:
-kn km menjelaskannya begini:
-Gambar 3.5 pada Bab III dirancang sebagai arsitektur logis yang
-menggambarkan what yaitu komponen apa saja yang terlibat dan bagaimana
-alur data mengalir secara konseptual, mulai dari konversi kueri menjadi vektor
-embedding, jalur vector search, jalur BM25, hingga penggabungan skor melalui
-RRF. Sementara itu, sub-bab ini menggambarkan how, yaitu bagaimana seluruh
-komponen logis tersebut diwujudkan secara teknis. Dalam implementasinya,
-seluruh alur yang digambarkan pada Gambar 3.5 dikemas ke dalam satu fungsi
-SQL search_problem_hybrid() yang berjalan di sisi basis data. Pemisahan
-antara arsitektur logis dan implementasi teknis ini adalah praktik umum dalam
-perancangan sistem, di mana diagram konseptual sengaja dibuat lebih rinci agar
-setiap tahap proses dapat dipahami secara independen, sementara
-implementasinya dioptimalkan untuk efisiensi dengan meminimalkan roundtrip
-jaringan antara lapisan aplikasi dan basis data.
+Fungsi ini **tidak memanggil SQL Function di database**, melainkan menjalankan query SQL biasa secara langsung ke tabel `sales.master_products`. Berbeda dengan `search_problem_hybrid()` yang memanggil stored function di PostgreSQL, `get_products_by_brand()` menggunakan query SQL inline (ditulis langsung di dalam method Python).
 
-Intinya ini dioptimalkan.
+### 2. Script Python — Definisi Fungsi `get_products_by_brand()`
 
-Pertanyaannya : apakah semua proses di gambar 3.5 itu sudah terwakilkan di query tersebut?
+Berikut adalah definisi fungsi di `app/services/database_service.py`:
+
+```python
+# app/services/database_service.py
+
+class DatabaseService:
+
+    async def get_products_by_brand(self, brand: str) -> List[Dict[str, Any]]:
+        query = """
+        SELECT
+            mp_id as product_id,
+            mp_name as product_name,
+            mp_category as product_category,
+            mp_brand as product_brand,
+            mp_price as product_price,
+            mp_description as product_description,
+            mp_image as product_image
+        FROM sales.master_products
+        WHERE LOWER(mp_brand) = LOWER($1)
+          AND mp_is_active = TRUE
+        ORDER BY mp_price DESC;
+        """
+        return await self.fetch(query, brand)
+```
+
+Fungsi ini menerima parameter `brand` (nama merek produk), lalu menjalankan query SQL langsung ke tabel `sales.master_products` untuk mengambil semua produk aktif dari merek tersebut, diurutkan berdasarkan harga tertinggi (premium first).
+
+### 3. Script Python — Pemanggilan Fungsi di Endpoint Chat
+
+Fungsi `get_products_by_brand()` dipanggil di `app/api/v1/endpoints/chat.py` pada **dua titik** dalam alur pencarian:
+
+#### a) Jalur Brand Detection (Sebelum Hybrid Search — Langsung ke Brand)
+
+Apabila sistem mendeteksi nama merek audio di dalam pesan pengguna **sebelum** melakukan hybrid search, sistem langsung memanggil `get_products_by_brand()`:
+
+```python
+# app/api/v1/endpoints/chat.py — STEP 2A2
+
+# Daftar merek yang dikenali sistem
+known_brands = [
+    'kenwood', 'pioneer', 'jvc', 'nakamichi', 'clarion',
+    'hertz', 'jl audio', 'rockford fosgate', 'skeleton',
+    'dhd', 'avix', 'orca', 'exxent'
+]
+
+# Deteksi merek yang disebut dalam query pengguna
+mentioned_brands = [brand for brand in known_brands if brand in query_lower]
+
+if mentioned_brands:
+    # Untuk setiap merek yang terdeteksi, panggil get_products_by_brand()
+    for brand in mentioned_brands:
+        brand_products = await db.get_products_by_brand(brand)
+        if brand_products:
+            # Simpan semua produk merek tersebut sebagai konteks rekomendasi
+            all_products_context.extend(brand_products)
+```
+
+#### b) Jalur Fallback (Setelah Hybrid Search Gagal Menemukan Masalah)
+
+Apabila hybrid search tidak berhasil mencocokkan masalah pengguna dengan data di tabel `master_customer_problems`, sistem masuk ke jalur fallback dan kembali memanggil `get_products_by_brand()`:
+
+```python
+# app/api/v1/endpoints/chat.py — Fallback: No problem matched
+
+if not recommendations:
+    # Cek kembali apakah ada nama merek dalam query
+    mentioned_brands = [brand for brand in known_brands if brand in query_lower]
+
+    if mentioned_brands:
+        # Fallback ke pencarian langsung berdasarkan merek
+        for brand in mentioned_brands:
+            brand_products = await db.get_products_by_brand(brand)
+            if brand_products:
+                all_products_context.extend(brand_products)
+    else:
+        # Tidak ada merek → fallback ke hybrid search pada tabel master_products
+        embedding = await embedding_service.get_embedding(search_query, input_type="query")
+        all_products = await db.search_product_hybrid(
+            query_text=search_query,
+            embedding=embedding,
+            match_count=30
+        )
+```
+
+### Ringkasan Alur Fallback
+
+```
+Query pengguna
+      │
+      ▼
+Deteksi mobil? ──Ya──► search_car() + get_car_recommendations_context()
+      │
+      No
+      ▼
+Deteksi merek? ──Ya──► get_products_by_brand()  ◄── (pencarian langsung, tanpa hybrid)
+      │
+      No
+      ▼
+Hybrid search (vector + BM25) pada master_customer_problems
+      │
+      Cocok? ──Ya──► get_recommendations() → produk terkait masalah
+      │
+      No (tidak ada masalah yang cocok)
+      ▼
+Fallback: Deteksi merek lagi?
+      ├──Ya──► get_products_by_brand()  ◄── (jalur product-only yang dimaksud)
+      └──No──► search_product_hybrid() pada master_products (max 30 produk)
+```
+
+Jadi, `get_products_by_brand()` adalah fungsi Python tersendiri yang berisi query SQL langsung ke `master_products`, dan dipanggil dari endpoint chat sebagai **jalur pintas** ketika merek audio spesifik disebutkan — baik sebelum maupun sesudah proses hybrid search.
