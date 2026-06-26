@@ -1,0 +1,4 @@
+mcp_problem_title,mcp_description,mcp_recommended_approach,mcp_is_active
+Suara pecah dan distorsi di volume tinggi,Speaker mengalami distorsi saat volume dinaikkan dan suara tidak bersih,Cek power rating speaker vs output amplifier; pertimbangkan upgrade speaker atau turunkan gain amplifier,TRUE
+Bass kurang bertenaga,Suara bass terasa tipis dan tidak menggetarkan,Rekomendasikan subwoofer dedicated + amplifier mono dan atur low-pass filter,TRUE
+Suara tidak seimbang antara depan dan belakang,Audio terdengar berat sebelah,Atur ulang fader dan balance head unit; cek koneksi speaker,TRUE

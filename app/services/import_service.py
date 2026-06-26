@@ -10,6 +10,7 @@ class ImportService:
     
     REQUIRED_PRODUCT_COLUMNS = ["mp_name", "mp_category", "mp_price"]
     REQUIRED_PROBLEM_COLUMNS = ["mcp_problem_title"]
+    REQUIRED_CAR_COLUMNS = ["mc_brand", "mc_model", "mc_size_category"]
     
     PRODUCT_COLUMNS_MAPPING = {
         "mp_name": "mp_name",
@@ -45,7 +46,39 @@ class ImportService:
         "active": "mcp_is_active",
         "is_active": "mcp_is_active",
     }
-    
+
+    CAR_COLUMNS_MAPPING = {
+        "mc_brand": "mc_brand",
+        "mc_model": "mc_model",
+        "mc_type": "mc_type",
+        "mc_size_category": "mc_size_category",
+        "mc_dashboard_type": "mc_dashboard_type",
+        "mc_door_count": "mc_door_count",
+        "mc_cabin_volume": "mc_cabin_volume",
+        "mc_subwoofer_space": "mc_subwoofer_space",
+        "mc_factory_speaker_size": "mc_factory_speaker_size",
+        "mc_factory_speaker_count": "mc_factory_speaker_count",
+        "mc_special_notes": "mc_special_notes",
+        "mc_is_active": "mc_is_active",
+        # Allow common aliases
+        "brand": "mc_brand",
+        "model": "mc_model",
+        "type": "mc_type",
+        "size_category": "mc_size_category",
+        "size": "mc_size_category",
+        "dashboard_type": "mc_dashboard_type",
+        "door_count": "mc_door_count",
+        "doors": "mc_door_count",
+        "cabin_volume": "mc_cabin_volume",
+        "subwoofer_space": "mc_subwoofer_space",
+        "factory_speaker_size": "mc_factory_speaker_size",
+        "factory_speaker_count": "mc_factory_speaker_count",
+        "special_notes": "mc_special_notes",
+        "notes": "mc_special_notes",
+        "active": "mc_is_active",
+        "is_active": "mc_is_active",
+    }
+
     def parse_file(self, file_content: bytes, filename: str, data_type: str) -> List[Dict[str, Any]]:
         """
         Parse CSV or Excel file and return list of dictionaries.
@@ -76,6 +109,8 @@ class ImportService:
                 return self._process_products(df)
             elif data_type == "problems":
                 return self._process_problems(df)
+            elif data_type == "cars":
+                return self._process_cars(df)
             else:
                 raise ValueError(f"Unsupported data type: {data_type}")
                 
@@ -155,7 +190,58 @@ class ImportService:
             problems.append(problem)
         
         return problems
-    
+
+    def _process_cars(self, df: pd.DataFrame) -> List[Dict[str, Any]]:
+        """Process and validate car data."""
+        df = self._map_columns(df, self.CAR_COLUMNS_MAPPING)
+
+        missing_cols = set(self.REQUIRED_CAR_COLUMNS) - set(df.columns)
+        if missing_cols:
+            raise ValueError(f"Missing required columns: {', '.join(missing_cols)}")
+
+        df = df.dropna(subset=self.REQUIRED_CAR_COLUMNS)
+
+        if 'mc_is_active' in df.columns:
+            df['mc_is_active'] = df['mc_is_active'].apply(self._parse_boolean)
+        else:
+            df['mc_is_active'] = True
+
+        cars = []
+        for _, row in df.iterrows():
+            car = {
+                'mc_brand': str(row['mc_brand']).strip(),
+                'mc_model': str(row['mc_model']).strip(),
+                'mc_size_category': str(row['mc_size_category']).strip().lower(),
+                'mc_type': self._clean_str(row.get('mc_type')),
+                'mc_dashboard_type': self._clean_str(row.get('mc_dashboard_type')) or 'double_din',
+                'mc_door_count': self._parse_int(row.get('mc_door_count'), default=4),
+                'mc_cabin_volume': self._clean_str(row.get('mc_cabin_volume')),
+                'mc_subwoofer_space': self._clean_str(row.get('mc_subwoofer_space')),
+                'mc_factory_speaker_size': self._clean_str(row.get('mc_factory_speaker_size')),
+                'mc_factory_speaker_count': self._parse_int(row.get('mc_factory_speaker_count'), default=2),
+                'mc_special_notes': self._clean_str(row.get('mc_special_notes')),
+                'mc_is_active': bool(row.get('mc_is_active', True)),
+            }
+            cars.append(car)
+
+        return cars
+
+    def _clean_str(self, value) -> Optional[str]:
+        """Strip a value to a clean string, or None if empty/NaN."""
+        if pd.isna(value):
+            return None
+        s = str(value).strip()
+        return s or None
+
+    def _parse_int(self, value, default: Optional[int] = None) -> Optional[int]:
+        """Parse an integer, falling back to default on missing/invalid."""
+        if pd.isna(value):
+            return default
+        try:
+            return int(float(value))
+        except (ValueError, TypeError):
+            return default
+
     def _map_columns(self, df: pd.DataFrame, column_mapping: Dict[str, str]) -> pd.DataFrame:
         """Map column names to standard format."""
         rename_dict = {}

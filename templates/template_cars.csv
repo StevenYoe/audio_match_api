@@ -1,0 +1,4 @@
+mc_brand,mc_model,mc_type,mc_size_category,mc_dashboard_type,mc_door_count,mc_cabin_volume,mc_subwoofer_space,mc_factory_speaker_size,mc_factory_speaker_count,mc_special_notes,mc_is_active
+Toyota,Avanza,MPV,large,double_din,4,"Luas, 3 row seats",spacious,6.5 inch,4,Sangat populer banyak pilihan head unit,TRUE
+Honda,Brio,City Car,small,single_din,4,"Kecil, 2 row seats",limited,5.25 inch,2,Dashboard single DIN space subwoofer terbatas,TRUE
+Toyota,Fortuner,SUV,large,double_din,4,Luas dan tinggi,spacious,6.5 inch,6,SUV premium speaker factory sudah lumayan,TRUE

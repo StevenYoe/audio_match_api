@@ -255,6 +255,30 @@ class DatabaseService:
         result = await self.fetch(query, *params)
         return len(result)
 
+    async def insert_cars(self, cars: List[Dict[str, Any]]) -> int:
+        """Bulk insert cars."""
+        if not cars:
+            return 0
+
+        cols = [
+            'mc_brand', 'mc_model', 'mc_type', 'mc_size_category', 'mc_dashboard_type',
+            'mc_door_count', 'mc_cabin_volume', 'mc_subwoofer_space',
+            'mc_factory_speaker_size', 'mc_factory_speaker_count', 'mc_special_notes', 'mc_is_active'
+        ]
+        n = len(cols)
+        query = f"INSERT INTO sales.master_cars ({', '.join(cols)}) VALUES "
+        values = []
+        for i in range(len(cars)):
+            values.append("(" + ", ".join(f"${i*n+j+1}" for j in range(n)) + ")")
+        query += ", ".join(values) + " RETURNING mc_id"
+
+        params = []
+        for c in cars:
+            params.extend([c.get(col) if col != 'mc_is_active' else c.get(col, True) for col in cols])
+
+        result = await self.fetch(query, *params)
+        return len(result)
+
     # --- ADMIN/SYNC METHODS ---
     async def get_unembedded_problems(self) -> List[Dict[str, Any]]:
         """Get problems without embeddings."""
